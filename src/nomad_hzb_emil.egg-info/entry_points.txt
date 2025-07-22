@@ -1,0 +1,2 @@
+[nomad.plugin]
+emil_package_entry_point = nomad_hzb_emil.schema_packages:emil_package_entry_point

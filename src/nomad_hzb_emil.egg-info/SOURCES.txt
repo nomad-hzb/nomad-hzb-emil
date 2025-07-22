@@ -1,0 +1,13 @@
+LICENSE
+MANIFEST.in
+README.md
+pyproject.toml
+src/nomad_hzb_emil/__init__.py
+src/nomad_hzb_emil.egg-info/PKG-INFO
+src/nomad_hzb_emil.egg-info/SOURCES.txt
+src/nomad_hzb_emil.egg-info/dependency_links.txt
+src/nomad_hzb_emil.egg-info/entry_points.txt
+src/nomad_hzb_emil.egg-info/requires.txt
+src/nomad_hzb_emil.egg-info/top_level.txt
+src/nomad_hzb_emil/schema_packages/__init__.py
+src/nomad_hzb_emil/schema_packages/emil_lab_package.py
