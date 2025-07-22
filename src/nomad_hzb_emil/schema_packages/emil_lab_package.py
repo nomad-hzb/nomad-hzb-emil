@@ -21,6 +21,7 @@ from baseclasses.chemical_energy import (
     GeneralProcess,
 )
 from baseclasses.helper.utilities import export_lab_id
+from baseclasses.voila import VoilaNotebook
 from nomad.datamodel.data import ArchiveSection, EntryData
 from nomad.datamodel.metainfo.basesections import (
     CompositeSystem,
@@ -138,6 +139,13 @@ def collectSampleData(archive):
             print('Error in processing data: ', e)
 
     return entry
+
+
+class EMIL_VoilaNotebook(VoilaNotebook, EntryData):
+    m_def = Section(a_eln=dict(hide=['lab_id']))
+
+    def normalize(self, archive, logger):
+        super().normalize(archive, logger)
 
 
 class EMIL_Sample(CompositeSystem, EntryData):
