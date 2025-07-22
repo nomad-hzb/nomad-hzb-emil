@@ -26,6 +26,8 @@ src/nomad_hzb_emil.egg-info/entry_points.txt
 src/nomad_hzb_emil.egg-info/requires.txt
 src/nomad_hzb_emil.egg-info/top_level.txt
 src/nomad_hzb_emil/apps/__init__.py
+src/nomad_hzb_emil/parsers/__init__.py
+src/nomad_hzb_emil/parsers/emil_general_parser.py
 src/nomad_hzb_emil/schema_packages/__init__.py
 src/nomad_hzb_emil/schema_packages/emil_lab_package.py
 src/nomad_hzb_emil/schema_packages/__pycache__/__init__.cpython-312.pyc
