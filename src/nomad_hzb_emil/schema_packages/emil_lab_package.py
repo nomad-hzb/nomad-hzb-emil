@@ -55,7 +55,7 @@ def create_id(archive, lab_id_base):
     from nomad.app.v1.models import MetadataPagination
     from nomad.search import search
 
-    query = {'entry_type': 'Beamline_Sample', 'results.eln.lab_ids': lab_id_base}
+    query = {'entry_type': 'EMIL_Sample', 'results.eln.lab_ids': lab_id_base}
     pagination = MetadataPagination()
     pagination.page_size = 9999
     search_result = search(
