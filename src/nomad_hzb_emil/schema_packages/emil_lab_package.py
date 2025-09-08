@@ -213,6 +213,14 @@ class EMIL_GeneralProcess(GeneralProcess, EntryData):
         super().normalize(archive, logger)
 
 
+class EMIL_BlueSkyMeasurementMetadata(ArchiveSection):
+    run_start_time = Quantity(type=float)
+    run_start_uid = Quantity(type=str)
+    scan_id = Quantity(type=int)
+    streams = Quantity(type=str, shape=['*'])
+    detectors = Quantity(type=str, shape=['*'])
+
+
 class EMIL_BlueSkyMeasurement(BaseMeasurement, EntryData):
     m_def = Section(
         a_eln=dict(
@@ -230,6 +238,22 @@ class EMIL_BlueSkyMeasurement(BaseMeasurement, EntryData):
         a_eln=dict(component='FileEditQuantity'),
         a_browser=dict(adaptor='RawFileAdaptor'),
     )
+
+    experiment_metadata = SubSection(section_def=EMIL_BlueSkyMeasurementMetadata)
+
+    def normalize(self, archive, logger):
+        super().normalize(archive, logger)
+
+        self.experiment_metadata = EMIL_BlueSkyMeasurementMetadata()
+        for file in self.bluesky_files:
+            with archive.m_context.raw_file(file, 'rt') as f:
+                import json
+
+                file_data = json.loads(f.read())
+            if 'start' in file:
+                self.experiment_metadata.run_start_time = file_data.get('time')
+                self.experiment_metadata.run_start_uid = file_data.get('uid')
+                self.experiment_metadata.scan_id = file_data.get('scan_id')
 
 
 m_package.__init_metainfo__()
