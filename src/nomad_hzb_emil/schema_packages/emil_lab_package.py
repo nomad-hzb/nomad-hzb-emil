@@ -17,6 +17,7 @@
 #
 
 
+from baseclasses import BaseMeasurement
 from baseclasses.chemical_energy import (
     GeneralProcess,
 )
@@ -210,6 +211,25 @@ class EMIL_GeneralProcess(GeneralProcess, EntryData):
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+
+
+class EMIL_BlueSkyMeasurement(BaseMeasurement, EntryData):
+    m_def = Section(
+        a_eln=dict(
+            hide=[
+                'lab_id',
+                'steps',
+                'results',
+            ],
+        ),
+    )
+
+    bluesky_files = Quantity(
+        type=str,
+        shape=['*'],
+        a_eln=dict(component='FileEditQuantity'),
+        a_browser=dict(adaptor='RawFileAdaptor'),
+    )
 
 
 m_package.__init_metainfo__()
