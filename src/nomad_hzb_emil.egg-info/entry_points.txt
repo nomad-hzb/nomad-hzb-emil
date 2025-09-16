@@ -1,4 +1,0 @@
-[nomad.plugin]
-emil_general_process_parser = nomad_hzb_emil.parsers:emil_general_process_parser
-emil_lab_voila_app = nomad_hzb_emil.apps:emil_lab_voila_app
-emil_package_entry_point = nomad_hzb_emil.schema_packages:emil_package_entry_point

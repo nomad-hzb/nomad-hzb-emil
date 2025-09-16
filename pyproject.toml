@@ -15,7 +15,7 @@ classifiers = [
 ]
 name = "nomad-hzb-emil"
 description = "Nomad plugin for EMIL lab at HZB"
-version = "0.1.0"
+dynamic = ["version"]
 readme = "README.md"
 requires-python = ">=3.9"
 authors = [
@@ -116,6 +116,8 @@ emil_package_entry_point = "nomad_hzb_emil.schema_packages:emil_package_entry_po
 emil_general_process_parser = "nomad_hzb_emil.parsers:emil_general_process_parser"
 emil_lab_voila_app = "nomad_hzb_emil.apps:emil_lab_voila_app"
 
+[tool.setuptools_scm]
+version_file = "src/nomad_hzb_emil/_version.py"
 
 
 [tool.cruft]
