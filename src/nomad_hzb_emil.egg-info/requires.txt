@@ -1,9 +1,0 @@
-nomad-lab>=1.3.0
-
-[:sys_platform == "win32"]
-python-magic-bin
-
-[dev]
-ruff
-pytest
-structlog

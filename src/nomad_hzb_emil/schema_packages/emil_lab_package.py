@@ -17,6 +17,9 @@
 #
 
 
+import json
+from typing import cast
+
 from baseclasses import BaseMeasurement
 from baseclasses.chemical_energy import (
     GeneralProcess,
@@ -29,8 +32,9 @@ from nomad.datamodel.metainfo.basesections import (
     CompositeSystemReference,
 )
 from nomad.datamodel.results import Material
-from nomad.metainfo import Quantity, SchemaPackage, Section, SubSection
+from nomad.metainfo import Datetime, MEnum, Quantity, SchemaPackage, Section, SubSection
 from unidecode import unidecode
+import datetime
 
 m_package = SchemaPackage()
 
@@ -193,7 +197,8 @@ class EMIL_Sample(CompositeSystem, EntryData):
             if not process['elements']:
                 continue
             archive.results.material.elements.extend(process['elements'])
-        archive.results.material.elements = list(set(archive.results.material.elements))
+        archive.results.material.elements = list(
+            set(archive.results.material.elements))
 
 
 class EMIL_GeneralProcess(GeneralProcess, EntryData):
@@ -213,12 +218,50 @@ class EMIL_GeneralProcess(GeneralProcess, EntryData):
         super().normalize(archive, logger)
 
 
+class EMIL_LocationEnum(MEnum):
+    SISSY1 = 'SISSY1'
+    OAESE = 'OAESE'
+
+
+class EMIL_ProvidedMetadata:
+    """Metadata provided by a form from the user.
+
+    It comes in through the bluesky run start document in the sub dictionary "nomad".
+    """
+
+    project_number = Quantity(type=int)
+    """Optional number for grouping together proposals."""
+
+    proposal_number = Quantity(type=int)
+    """The proposal number of the experiment. This will match the upload name."""
+
+    location = Quantity(type=EMIL_LocationEnum)
+    """One of `SISSY1` or `OAESE`."""
+
+
 class EMIL_BlueSkyMeasurementMetadata(ArchiveSection):
-    run_start_time = Quantity(type=float)
-    run_start_uid = Quantity(type=str)
-    scan_id = Quantity(type=int)
-    streams = Quantity(type=str, shape=['*'])
-    detectors = Quantity(type=str, shape=['*'])
+    """Metadata implicit to bluesky experiments."""
+
+    run_start_times = Quantity(type=Datetime, shape=['0..*'])
+    """The unix epoch start times of each run, in order."""
+
+    run_start_uids = Quantity(type=str, shape=['0..*'])
+    """The uids of the run start documents in the upload."""
+
+    scan_ids = Quantity(type=int, shape=['0..*'])
+    """The scan ids of the run start documents in the upload."""
+
+    detectors = Quantity(type=str, shape=['0..*'])
+    """All the 'detectors' (data_keys) in all runs in the upload."""
+
+    number_of_events = Quantity(type=int)
+    """The total number of events in this proposal."""
+
+
+def _open_json_from_archive(archive, file_name) -> dict:
+    with archive.m_context.raw_file(file_name, 'rt') as f:
+        file_data = json.loads(f.read())
+    return file_data
 
 
 class EMIL_BlueSkyMeasurement(BaseMeasurement, EntryData):
@@ -243,17 +286,33 @@ class EMIL_BlueSkyMeasurement(BaseMeasurement, EntryData):
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+        self.experiment_metadata = EMIL_BlueSkyMeasurementMetadata(
+            run_start_times=[],
+            run_start_uids=[],
+            scan_ids=[],
+            detectors=[],
+            number_of_events=0
+        )
 
-        self.experiment_metadata = EMIL_BlueSkyMeasurementMetadata()
-        for file in self.bluesky_files:
-            with archive.m_context.raw_file(file, 'rt') as f:
-                import json
-
-                file_data = json.loads(f.read())
-            if 'start' in file:
-                self.experiment_metadata.run_start_time = file_data.get('time')
-                self.experiment_metadata.run_start_uid = file_data.get('uid')
-                self.experiment_metadata.scan_id = file_data.get('scan_id')
+        for file_name in self.bluesky_files:
+            if 'start' in file_name:
+                data = _open_json_from_archive(archive, file_name)
+                cast(list, self.experiment_metadata.run_start_times).append(
+                    datetime.datetime.fromtimestamp(data.get('time'))
+                )
+                cast(list, self.experiment_metadata.run_start_uids).append(
+                    data.get('uid')
+                )
+                cast(list, self.experiment_metadata.scan_ids).append(
+                    data.get('scan_id')
+                )
+            elif 'descriptor' in file_name:
+                data = _open_json_from_archive(archive, file_name)
+                self.experiment_metadata.detectors = list(data['data_keys'])
+            elif 'stop' in file_name:
+                data = _open_json_from_archive(archive, file_name)
+                self.experiment_metadata.number_of_events = sum(
+                    data['num_events'].values())
 
 
 m_package.__init_metainfo__()
