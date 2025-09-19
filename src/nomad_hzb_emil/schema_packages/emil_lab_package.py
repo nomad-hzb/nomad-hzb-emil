@@ -18,6 +18,7 @@
 
 
 import json
+from typing import cast
 
 from baseclasses import BaseMeasurement
 from baseclasses.chemical_energy import (
@@ -31,10 +32,9 @@ from nomad.datamodel.metainfo.basesections import (
     CompositeSystemReference,
 )
 from nomad.datamodel.results import Material
-from nomad.metainfo import Quantity, SchemaPackage, Section, SubSection, MEnum, Datetime
+from nomad.metainfo import Datetime, MEnum, Quantity, SchemaPackage, Section, SubSection
 from unidecode import unidecode
-
-from typing import cast
+import datetime
 
 m_package = SchemaPackage()
 
@@ -197,7 +197,8 @@ class EMIL_Sample(CompositeSystem, EntryData):
             if not process['elements']:
                 continue
             archive.results.material.elements.extend(process['elements'])
-        archive.results.material.elements = list(set(archive.results.material.elements))
+        archive.results.material.elements = list(
+            set(archive.results.material.elements))
 
 
 class EMIL_GeneralProcess(GeneralProcess, EntryData):
@@ -281,16 +282,23 @@ class EMIL_BlueSkyMeasurement(BaseMeasurement, EntryData):
         a_browser=dict(adaptor='RawFileAdaptor'),
     )
 
-    experiment_metadata = EMIL_BlueSkyMeasurementMetadata()
+    experiment_metadata = SubSection(section_def=EMIL_BlueSkyMeasurementMetadata)
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
+        self.experiment_metadata = EMIL_BlueSkyMeasurementMetadata(
+            run_start_times=[],
+            run_start_uids=[],
+            scan_ids=[],
+            detectors=[],
+            number_of_events=0
+        )
 
         for file_name in self.bluesky_files:
             if 'start' in file_name:
                 data = _open_json_from_archive(archive, file_name)
                 cast(list, self.experiment_metadata.run_start_times).append(
-                    data.get('time')
+                    datetime.datetime.fromtimestamp(data.get('time'))
                 )
                 cast(list, self.experiment_metadata.run_start_uids).append(
                     data.get('uid')
@@ -300,14 +308,11 @@ class EMIL_BlueSkyMeasurement(BaseMeasurement, EntryData):
                 )
             elif 'descriptor' in file_name:
                 data = _open_json_from_archive(archive, file_name)
-                self.experiment_metadata.detectors = list(
-                    set(self.experiment_detectors) | data['data_keys'].keys()
-                )
+                self.experiment_metadata.detectors = list(data['data_keys'])
             elif 'stop' in file_name:
                 data = _open_json_from_archive(archive, file_name)
-                self.experiment_metadata.number_of_events = cast(
-                    int, self.experiment_metadata.number_of_events
-                ) + sum(data['num_events'].values())
+                self.experiment_metadata.number_of_events = sum(
+                    data['num_events'].values())
 
 
 m_package.__init_metainfo__()
