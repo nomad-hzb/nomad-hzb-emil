@@ -18,6 +18,15 @@ from nomad.config.models.ui import (
     WidgetTerms,
 )
 
+from nomad_hzb_emil.apps.emil_eln_app import emil_eln_app
+
+emil_eln_app = AppEntryPoint(
+    name='EMIL ELN',
+    description='Explore the data from EMIL Oasis',
+    app=emil_eln_app,
+)
+
+
 schema_name = 'nomad_hzb_emil.schema_packages.emil_lab_package.EMIL_VoilaNotebook'
 emil_lab_voila_app = AppEntryPoint(
     name='voila',
