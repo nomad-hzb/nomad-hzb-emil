@@ -19,11 +19,18 @@ from nomad.config.models.ui import (
 )
 
 from nomad_hzb_emil.apps.emil_eln_app import emil_eln_app
+from nomad_hzb_emil.apps.scala_eln_app import scala_eln_app
 
 emil_eln_app = AppEntryPoint(
     name='EMIL ELN',
     description='Explore the data from EMIL Oasis',
     app=emil_eln_app,
+)
+
+scala_eln_app = AppEntryPoint(
+    name='SCALA',
+    description='Explore the data measured in SCALA lab',
+    app=scala_eln_app,
 )
 
 
