@@ -117,6 +117,7 @@ emil_general_process_parser = "nomad_hzb_emil.parsers:emil_general_process_parse
 emil_lab_voila_app = "nomad_hzb_emil.apps:emil_lab_voila_app"
 emil_eln_app = "nomad_hzb_emil.apps:emil_eln_app"
 emil_scala_app = "nomad_hzb_emil.apps:scala_eln_app"
+data_upload_api_entry_point = "nomad_hzb_emil.apis:data_upload_api_entry_point"
 
 
 

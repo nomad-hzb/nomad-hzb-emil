@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EMIL Sample Management System</title>
+
+<!-- AG Grid v30 (Community, UMD) -->
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/ag-grid-community@30.2.1/styles/ag-grid.css"/>
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/ag-grid-community@30.2.1/styles/ag-theme-balham.css"/>
+<script src="https://cdn.jsdelivr.net/npm/ag-grid-community@30.2.1/dist/ag-grid-community.min.noStyle.js"></script>
+
+<!-- JSZip for zipping multiple files before upload -->
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+<style>
+/* ── Reset & base ──────────────────────────────────────────────────────── */
+*  { box-sizing: border-box; }
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0; padding: 20px;
+    background: #f4f6f9; color: #333;
+}
+
+/* ── Header ────────────────────────────────────────────────────────────── */
+.app-header {
+    background: linear-gradient(135deg, #274b8e 0%, #3b6db0 100%);
+    padding: 20px; border-radius: 15px;
+    color: white; margin: 10px 0;
+}
+.app-header h1 { margin: 0; color: white; }
+
+/* ── Overview section ──────────────────────────────────────────────────── */
+.overview-section {
+    border: 2px solid #dee2e6; border-radius: 12px;
+    padding: 20px; margin-top: 10px; background: white;
+}
+.overview-section h2 { margin-top: 0; color: #333; }
+
+.feature-cards {
+    display: flex; gap: 20px; margin-top: 10px;
+    flex-wrap: wrap; max-width: 1000px;
+}
+.feature-card {
+    flex: 1 1 250px; padding: 15px; background: #f8f9fa;
+    border-radius: 8px; min-width: 250px;
+}
+.feature-card h4 { margin-top: 0; }
+.feature-card.green { border-left: 4px solid #28a745; }
+.feature-card.blue  { border-left: 4px solid #007bff; }
+.feature-card.red   { border-left: 4px solid #dc3545; }
+
+/* ── Auth status ───────────────────────────────────────────────────────── */
+.auth-status {
+    background: white; border-radius: 12px; padding: 18px 20px;
+    margin-top: 15px; border: 2px solid #e1e8ed;
+    display: flex; align-items: center; gap: 12px;
+}
+.auth-status .user-info {
+    font-weight: 600; color: #274b8e;
+}
+.auth-status .btn-logout {
+    margin-left: auto;
+}
+
+/* ── Controls ──────────────────────────────────────────────────────────── */
+.controls-section {
+    background: white; border-radius: 12px; padding: 20px;
+    margin-top: 15px; border: 1px solid #dee2e6;
+}
+
+/* ── Inputs ────────────────────────────────────────────────────────────── */
+select, input[type="text"], input[type="password"],
+input[type="datetime-local"] {
+    border: 2px solid #e1e8ed; border-radius: 8px;
+    padding: 8px 12px; font-size: 14px; font-family: inherit;
+}
+select:focus, input:focus {
+    outline: none; border-color: #274b8e;
+    box-shadow: 0 0 0 3px rgba(39,75,142,.1);
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────────── */
+.btn {
+    border: none; border-radius: 8px; color: white;
+    font-weight: 600; padding: 12px 24px; cursor: pointer;
+    transition: all .3s ease; font-size: 14px; font-family: inherit;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn-primary {
+    background: linear-gradient(135deg, #274b8e 0%, #3b6db0 100%);
+    box-shadow: 0 4px 15px rgba(102,126,234,.3);
+}
+.btn-primary:hover { box-shadow: 0 8px 25px rgba(102,126,234,.4); }
+.btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #34ce57 100%);
+    box-shadow: 0 4px 15px rgba(40,167,69,.3);
+}
+.btn-success:hover { box-shadow: 0 8px 25px rgba(40,167,69,.4); }
+.btn:disabled {
+    opacity: .6; cursor: not-allowed; transform: none !important;
+}
+
+/* ── Grid & layout ─────────────────────────────────────────────────────── */
+.grid-container { margin: 15px 0; }
+#sampleGrid { width: 100%; height: 500px; }
+.form-row {
+    display: flex; align-items: center; gap: 15px;
+    margin: 10px 0; flex-wrap: wrap;
+}
+.separator { border: 0; border-top: 1px solid #dee2e6; margin: 20px 0; }
+.section-header {
+    margin-top: 25px; margin-bottom: 15px;
+    padding-bottom: 10px; border-bottom: 2px solid #dee2e6;
+}
+
+/* ── Alerts ─────────────────────────────────────────────────────────────── */
+.status-area { margin: 15px 0; }
+.alert {
+    padding: 12px 15px; border-radius: 8px;
+    margin: 8px 0; font-size: 14px;
+}
+.alert-info    { background:#d1ecf1; color:#0c5460; border-left:4px solid #17a2b8; }
+.alert-success { background:#d4edda; color:#155724; border-left:4px solid #28a745; }
+.alert-warning { background:#fff3cd; color:#856404; border-left:4px solid #ffc107; }
+.alert-danger  { background:#f8d7da; color:#721c24; border-left:4px solid #dc3545; }
+
+/* ── Warning card ──────────────────────────────────────────────────────── */
+.warning-card {
+    background: white; border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.1);
+    padding: 10px 15px; max-width: 300px;
+    text-align: center; border-left: 6px solid #ff6b6b;
+    margin-top: 15px;
+}
+.warning-card a {
+    color: #007bff; text-decoration: none; font-weight: 600;
+}
+.warning-card a:hover { color: #0056b3; text-decoration: underline; }
+
+/* ── Spinner ───────────────────────────────────────────────────────────── */
+.spinner {
+    display: inline-block; width: 18px; height: 18px;
+    border: 3px solid rgba(255,255,255,.3); border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin .8s linear infinite;
+    vertical-align: middle; margin-right: 6px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+
+<body>
+<!-- ═══════════════════  HEADER  ════════════════════════════════════════ -->
+<div class="app-header">
+    <h1>EMIL Sample Management System</h1>
+</div>
+
+<!-- ═══════════════════  NAVIGATION  ═══════════════════════════════════ -->
+<div style="display:flex;gap:8px;margin:10px 0">
+    <a href="./" style="padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;background:#274b8e;color:white;border:2px solid #274b8e">&#x1F4CB; Sample Management</a>
+    <a href="./file-upload" style="padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;background:white;color:#274b8e;border:2px solid #e1e8ed">&#x1F4E4; Data Upload</a>
+</div>
+
+<!-- ═══════════════════  OVERVIEW  ══════════════════════════════════════ -->
+<div class="overview-section">
+    <h2>Overview</h2>
+    <p style="opacity:.9">
+        A digital workflow for automated sample creation, data upload,
+        and relationship visualization.
+    </p>
+    <p style="opacity:.9">
+        Select your project from the dropdown menu and the following
+        functionalities are available:
+    </p>
+    <div class="feature-cards">
+        <div class="feature-card green">
+            <h4>&#x1F4CB; Sample Management</h4>
+            <p>Create and manage samples through an interactive table interface</p>
+        </div>
+        <div class="feature-card blue">
+            <h4>&#x1F4E4; Data Upload</h4>
+            <p>Upload and associate measurement data files with specific samples</p>
+        </div>
+        <div class="feature-card red">
+            <h4>&#x1F578;&#xFE0F; Sample Network</h4>
+            <p>Visualize sample and measurement relationships and processing history</p>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════  AUTH STATUS  ═══════════════════════════════════ -->
+<div class="auth-status" id="authStatus" style="display:none">
+    <span>&#x1F511;</span>
+    <span class="user-info" id="userInfo"></span>
+    <button class="btn btn-primary btn-logout" onclick="doLogout()">Logout</button>
+</div>
+
+<hr class="separator">
+
+<!-- ═══════════════════  UPLOAD SELECTOR  ═══════════════════════════════ -->
+<div class="controls-section" id="uploadSection" style="display:none">
+    <p style="opacity:.9">Select your project.</p>
+    <div class="form-row">
+        <label for="uploadSelect" style="font-weight:600">NOMAD Upload:</label>
+        <select id="uploadSelect" style="min-width:400px"
+                onchange="onUploadChange()">
+            <option value="">-- Select an upload --</option>
+        </select>
+    </div>
+</div>
+
+<!-- ═══════════════════  SAMPLE MANAGEMENT  ════════════════════════════ -->
+<div id="sampleSection" style="display:none">
+    <h2 class="section-header">&#x1F4CB; Sample Management &mdash; Create and Edit Samples</h2>
+
+    <div class="controls-section">
+        <div class="form-row">
+            <label for="datetimeInput" style="font-weight:600">Creation Date:</label>
+            <input type="datetime-local" id="datetimeInput" />
+        </div>
+
+        <div class="grid-container">
+            <div id="sampleGrid" class="ag-theme-balham"></div>
+        </div>
+
+        <div class="form-row" style="margin-top:15px">
+            <button class="btn btn-success" onclick="createEntries()"
+                    id="createBtn" disabled>Create Entries</button>
+            <button class="btn btn-primary" onclick="addEmptyRows()">
+                &#x2795; Add Rows</button>
+        </div>
+
+        <div class="status-area" id="statusArea"></div>
+    </div>
+
+    <!-- Warning card -->
+    <div class="warning-card">
+        <div style="font-size:24px;color:#ff6b6b">&#x26A0;&#xFE0F;</div>
+        <p style="color:#666;font-size:12px;line-height:1.4">
+            If you encounter an error, please check your token and
+            <a href="__NOMAD_GUI__/analyze/north">restart in NOMAD</a>.
+        </p>
+    </div>
+</div>
+
+<!-- ═══════════════════  JAVASCRIPT  ═══════════════════════════════════ -->
+<script>
+// ── constants (all relative, no absolute domains) ────────────────────────
+const NOMAD_API = '__NOMAD_API__';   // e.g. /nomad-oasis/api/v1
+const NOMAD_GUI = '__NOMAD_GUI__';   // e.g. /nomad-oasis/gui
+const NOMAD_BASE = '__NOMAD_BASE__'; // redirect target for login
+
+let token = '';
+let keycloak = null;
+let uploads = [];
+let gridOptions = null;
+
+// default datetime = now
+document.getElementById('datetimeInput').value =
+    new Date().toISOString().slice(0, 16);
+
+// ── generic fetch helpers ────────────────────────────────────────────────
+function nomadHeaders() {
+    return { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+}
+
+async function nomadGet(path, params) {
+    const qs = params ? '?' + new URLSearchParams(params).toString() : '';
+    const r = await fetch(NOMAD_API + path + qs, { headers: nomadHeaders() });
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}) ) ).detail || r.statusText);
+    return r.json();
+}
+
+async function nomadPost(path, body) {
+    const r = await fetch(NOMAD_API + path, {
+        method: 'POST', headers: nomadHeaders(), body: JSON.stringify(body)
+    });
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}) ) ).detail || r.statusText);
+    return r.json();
+}
+
+async function nomadPutFile(path, files) {
+    // files: array of { filename, content } objects
+    // Zips all files and PUTs the zip archive.
+    const zip = new JSZip();
+    for (const f of files) {
+        zip.file(f.filename, f.content);
+    }
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const fd = new FormData();
+    fd.append('file', blob, 'upload.zip');
+    const r = await fetch(NOMAD_API + path, {
+        method: 'PUT',
+        headers: { 'Authorization': 'Bearer ' + token },
+        body: fd
+    });
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}) ) ).detail || r.statusText);
+    return r.json();
+}
+
+// ── status messages ──────────────────────────────────────────────────────
+function showStatus(msg, type) {
+    type = type || 'info';
+    const area = document.getElementById('statusArea');
+    const div = document.createElement('div');
+    div.className = 'alert alert-' + type;
+    div.innerHTML = msg;
+    area.prepend(div);
+    if (type !== 'danger') setTimeout(() => div.remove(), 12000);
+}
+function clearStatus() { document.getElementById('statusArea').innerHTML = ''; }
+
+// ── Keycloak SSO authentication ──────────────────────────────────────────
+function loadScript(url) {
+    return new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = url; s.onload = resolve; s.onerror = reject;
+        document.head.appendChild(s);
+    });
+}
+
+async function initAuth() {
+    try {
+        const res = await fetch('auth/config');
+        const cfg = await res.json();
+
+        await loadScript(cfg.keycloak_url + '/js/keycloak.js');
+
+        keycloak = new Keycloak({
+            url: cfg.keycloak_url,
+            realm: cfg.keycloak_realm,
+            clientId: cfg.keycloak_client_id,
+        });
+
+        const authenticated = await keycloak.init({
+            onLoad: 'check-sso',
+            checkLoginIframe: false,
+        });
+
+        if (authenticated) {
+            token = keycloak.token;
+            document.getElementById('userInfo').textContent =
+                'Logged in as ' + (keycloak.tokenParsed.preferred_username || keycloak.tokenParsed.name || 'user');
+            document.getElementById('authStatus').style.display = '';
+            await loadUploads();
+            // Refresh token periodically
+            setInterval(() => {
+                keycloak.updateToken(30).then(refreshed => {
+                    if (refreshed) token = keycloak.token;
+                }).catch(() => {
+                    window.location.href = NOMAD_BASE;
+                });
+            }, 60000);
+        } else {
+            // Not authenticated — redirect to NOMAD for login
+            window.location.href = NOMAD_BASE;
+        }
+    } catch (e) {
+        console.error('Auth init failed:', e);
+        window.location.href = NOMAD_BASE;
+    }
+}
+
+function doLogout() {
+    if (keycloak) {
+        keycloak.logout({ redirectUri: window.location.href });
+    }
+}
+
+initAuth();
+
+// ── load uploads (GET /uploads) ──────────────────────────────────────────
+async function loadUploads() {
+    const data = await nomadGet('/uploads', {
+        page_size: 100, order_by: 'upload_create_time', order: 'desc'
+    });
+    uploads = data.data || [];
+    const sel = document.getElementById('uploadSelect');
+    sel.innerHTML = '<option value="">-- Select an upload --</option>';
+    uploads.filter(u => u.upload_name).forEach(u => {
+        const o = document.createElement('option');
+        o.value = u.upload_id;
+        o.textContent = u.upload_name;
+        sel.appendChild(o);
+    });
+    document.getElementById('uploadSection').style.display = '';
+    showStatus('&#x2705; Connected! Found ' + uploads.length + ' uploads.', 'success');
+}
+
+// ── load samples for the selected upload ─────────────────────────────────
+async function onUploadChange() {
+    const uid = document.getElementById('uploadSelect').value;
+    if (!uid) { document.getElementById('sampleSection').style.display = 'none'; return; }
+
+    document.getElementById('sampleSection').style.display = '';
+    clearStatus();
+    showStatus('&#x1F504; Loading samples&#x2026;', 'info');
+    try {
+        const rows = await fetchSamplesForUpload(uid);
+        initGrid(rows);
+        clearStatus();
+        document.getElementById('createBtn').disabled = false;
+        showStatus('&#x2705; Loaded ' + rows.length + ' existing sample(s).', 'success');
+    } catch (e) {
+        clearStatus();
+        showStatus('&#x274C; Failed to load samples: ' + e.message, 'danger');
+    }
+}
+
+// ── query helpers (replicate notebook cells 7 & 9 logic) ─────────────────
+function getParam(d, path) {
+    if (!d) return '';
+    const parts = path.split('/');
+    if (parts.length === 1) return (d && typeof d === 'object' && !Array.isArray(d)) ? (d[parts[0]] ?? '') : '';
+    const [head, ...rest] = parts;
+    const restPath = rest.join('/');
+    if (Array.isArray(d)) { try { return getParam(d[parseInt(head)], restPath); } catch { return ''; } }
+    return getParam(d[head] ?? '', restPath);
+}
+
+async function fetchSamplesForUpload(uploadId) {
+    // 1) Get EMIL_Sample entries in this upload
+    const samplesResp = await nomadPost('/entries/archive/query', {
+        required: { data: '*' },
+        owner: 'visible',
+        query: { upload_id: uploadId, entry_type: 'EMIL_Sample' },
+        pagination: { page_size: 150 }
+    });
+    const samples = (samplesResp.data || []).sort(
+        (a, b) => (a.archive.data.lab_id || '').localeCompare(b.archive.data.lab_id || '')
+    );
+
+    const sampleIds = samples
+        .map(s => s.archive.data.lab_id)
+        .filter(Boolean);
+
+    // 2) Get linked activities / processes
+    let processes = {};
+    if (sampleIds.length) {
+        // get entry_ids from lab_ids
+        const eidResp = await nomadPost('/entries/query', {
+            required: { metadata: '*' },
+            owner: 'visible',
+            query: { 'results.eln.lab_ids:any': sampleIds },
+            pagination: { page_size: 100 }
+        });
+        const entryIds = (eidResp.data || []).map(d => d.entry_id);
+
+        if (entryIds.length) {
+            const actResp = await nomadPost('/entries/archive/query', {
+                required: { metadata: '*', data: '*' },
+                owner: 'visible',
+                query: {
+                    'entry_references.target_entry_id:any': entryIds,
+                    'section_defs.definition_qualified_name:any': [
+                        'nomad.datamodel.metainfo.basesections.v1.Activity',
+                        'nomad.datamodel.metainfo.basesections.Activity'
+                    ]
+                },
+                pagination: { page_size: 1000 }
+            });
+            for (const d of (actResp.data || [])) {
+                const ad = d.archive.data;
+                if (!ad.samples || !ad.samples[0] || !ad.samples[0].lab_id) continue;
+                const lbl = ad.samples[0].lab_id;
+                if (!processes[lbl]) processes[lbl] = [];
+                processes[lbl].push(ad.method || 'Measurement');
+            }
+        }
+    }
+
+    // 3) Build row objects for the grid
+    return samples.map(s => {
+        const ad = s.archive.data;
+        const sid = getParam(ad, 'lab_id');
+        const comps = (ad.components || []).map((_, i) =>
+            getParam(ad, 'components/' + i + '/pure_substance/molecular_formula'));
+        return {
+            id: sid,
+            parent_nomad_id: getParam(ad, 'parent/lab_id'),
+            name: getParam(ad, 'name'),
+            material_formulas: comps.join(','),
+            substrate_type: getParam(ad, 'substrate/substrate_type'),
+            substrate_dimension: getParam(ad, 'substrate/substrate_dimension'),
+            active_area: getParam(ad, 'active_area'),
+            description: getParam(ad, 'description'),
+            processes: [...new Set(processes[sid] || [])]
+        };
+    });
+}
+
+// ── AG Grid setup ────────────────────────────────────────────────────────
+function initGrid(samples) {
+    const colDefs = [
+        { headerName: 'ID',                   field: 'id',                  editable: true,  width: 150 },
+        { headerName: 'Parent (nomadID)',      field: 'parent_nomad_id',     editable: true,  width: 160 },
+        { headerName: 'Name',                  field: 'name',                editable: true,  width: 180 },
+        { headerName: 'Material Formulas',     field: 'material_formulas',   editable: true,  width: 160 },
+        { headerName: 'Substrate Type',        field: 'substrate_type',      editable: true,  width: 130 },
+        { headerName: 'Substrate Dimension',   field: 'substrate_dimension', editable: true,  width: 150 },
+        { headerName: 'Active Area [cm\u00B2]', field: 'active_area',       editable: true,  width: 140,
+           valueParser: p => p.newValue === '' ? null : Number(p.newValue) },
+        { headerName: 'Description',           field: 'description',         editable: true,  width: 200 },
+        { headerName: 'Process & Measurement', field: 'processes',           editable: false, width: 220,
+           valueFormatter: p => p.value ? p.value.join(', ') : '' }
+    ];
+
+    const rows = [...samples];
+    for (let i = 0; i < 12; i++) rows.push({});
+
+    const gridDiv = document.getElementById('sampleGrid');
+    gridDiv.innerHTML = '';
+
+    gridOptions = {
+        columnDefs: colDefs,
+        rowData: rows,
+        defaultColDef: { resizable: true, sortable: true },
+        rowSelection: 'multiple',
+        enableRangeSelection: true,
+        animateRows: true,
+        undoRedoCellEditing: true,
+        undoRedoCellEditingLimit: 20,
+        stopEditingWhenCellsLoseFocus: true
+    };
+    new agGrid.Grid(gridDiv, gridOptions);
+}
+
+function addEmptyRows() {
+    if (!gridOptions || !gridOptions.api) return;
+    const rows = [];
+    for (let i = 0; i < 5; i++) rows.push({});
+    gridOptions.api.applyTransaction({ add: rows });
+}
+
+// ── process upload (trigger + poll) ──────────────────────────────────────
+async function processUpload(uploadId) {
+    await fetch(NOMAD_API + '/uploads/' + uploadId + '/action/process', {
+        method: 'POST', headers: nomadHeaders()
+    });
+    for (let i = 0; i < 120; i++) {
+        await new Promise(r => setTimeout(r, 1000));
+        const resp = await nomadGet('/uploads/' + uploadId);
+        if (!resp.data.process_running) break;
+    }
+}
+
+// ── create entries ───────────────────────────────────────────────────────
+async function createEntries() {
+    const uploadId = document.getElementById('uploadSelect').value;
+    if (!uploadId) { showStatus('&#x26A0;&#xFE0F; Select an upload first.', 'warning'); return; }
+
+    const allRows = [];
+    gridOptions.api.forEachNode(n => allRows.push(n.data));
+    const valid = allRows.filter(r => r.name || r.id || r.material_formulas || r.description);
+    if (!valid.length) {
+        showStatus('&#x26A0;&#xFE0F; No data to create. Fill in at least the <b>Name</b> field.', 'warning');
+        return;
+    }
+
+    const btn = document.getElementById('createBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Creating&#x2026;';
+    clearStatus();
+    showStatus('&#x1F504; <b>Processing:</b> Creating entries (this may take some time)&#x2026;', 'warning');
+
+    const dtVal = document.getElementById('datetimeInput').value;
+    const sampleDt = dtVal
+        ? new Date(dtVal).toISOString().replace('T', ' ').slice(0, 26)
+        : new Date().toISOString().replace('T', ' ').slice(0, 26);
+
+    let created = 0, errors = [];
+    const filesToUpload = [];
+
+    for (let i = 0; i < valid.length; i++) {
+        const r = valid[i];
+        const archive = {
+            data: {
+                m_def: 'nomad_hzb_emil.schema_packages.emil_lab_package.EMIL_Sample',
+                name: r.name || '',
+                datetime: sampleDt,
+                substrate: {
+                    substrate_type: r.substrate_type || null,
+                    substrate_dimension: r.substrate_dimension || null
+                },
+                description: r.description || null,
+                active_area: (r.active_area != null && r.active_area !== '') ? Number(r.active_area) : null,
+                components: r.material_formulas
+                    ? r.material_formulas.split(',').map(f => ({
+                        m_def: 'nomad.datamodel.metainfo.basesections.PureSubstanceComponent',
+                        pure_substance: {
+                            m_def: 'nomad.datamodel.metainfo.basesections.PureSubstanceSection',
+                            molecular_formula: f.trim()
+                        }
+                    }))
+                    : null
+            }
+        };
+
+        if (r.parent_nomad_id) archive.data.parent = { lab_id: r.parent_nomad_id };
+        if (r.id)              archive.data.lab_id  = r.id;
+
+        filesToUpload.push({
+            filename: i + '_sample.archive.json',
+            content: JSON.stringify(archive)
+        });
+        created++;
+    }
+
+    try {
+        await nomadPutFile('/uploads/' + uploadId + '/raw/', filesToUpload);
+    } catch (e) {
+        errors.push('zip upload: ' + e.message);
+        created = 0;
+    }
+
+    // Wait for processing to finish
+    showStatus('&#x1F504; <b>Processing:</b> Waiting for NOMAD to finish processing&#x2026;', 'info');
+    for (let i = 0; i < 120; i++) {
+        await new Promise(r => setTimeout(r, 1000));
+        const resp = await nomadGet('/uploads/' + uploadId);
+        console.log('process_status:', resp.data.process_status);
+        if (resp.data.process_status === 'SUCCESS') break;
+    }
+
+    errors.forEach(err =>
+        showStatus('&#x274C; <b>Error</b>: ' + err, 'danger'));
+    showStatus('&#x2705; <b>Success:</b> Created ' + created + ' sample(s)'
+        + (errors.length ? ' with ' + errors.length + ' error(s)' : ''), 'success');
+
+    // reload
+    btn.innerHTML = '<span class="spinner"></span>Reloading&#x2026;';
+    await onUploadChange();
+    btn.disabled = false;
+    btn.innerHTML = 'Create Entries';
+}
+
+</script>
+</body>
+</html>
