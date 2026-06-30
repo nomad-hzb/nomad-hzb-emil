@@ -180,7 +180,8 @@ class EMIL_Sample(CompositeSystem, EntryData):
                 last_short = unidecode(author.last_name)[:2]
             except Exception:
                 pass
-            self.lab_id = create_id(archive, str(first_short) + str(last_short))
+            self.lab_id = create_id(archive, str(
+                first_short) + str(last_short))
         export_lab_id(archive, self.lab_id)
 
         if not archive.results.material:
@@ -193,7 +194,8 @@ class EMIL_Sample(CompositeSystem, EntryData):
             if not process['elements']:
                 continue
             archive.results.material.elements.extend(process['elements'])
-        archive.results.material.elements = list(set(archive.results.material.elements))
+        archive.results.material.elements = list(
+            set(archive.results.material.elements))
 
 
 class EMIL_GeneralProcess(GeneralProcess, EntryData):
@@ -202,7 +204,6 @@ class EMIL_GeneralProcess(GeneralProcess, EntryData):
             hide=[
                 'lab_id',
                 'steps',
-                'instruments',
                 'results',
             ],
             properties=dict(order=[]),
@@ -239,7 +240,8 @@ class EMIL_BlueSkyMeasurement(BaseMeasurement, EntryData):
         a_browser=dict(adaptor='RawFileAdaptor'),
     )
 
-    experiment_metadata = SubSection(section_def=EMIL_BlueSkyMeasurementMetadata)
+    experiment_metadata = SubSection(
+        section_def=EMIL_BlueSkyMeasurementMetadata)
 
     def normalize(self, archive, logger):
         super().normalize(archive, logger)
