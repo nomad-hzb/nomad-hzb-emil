@@ -29,9 +29,7 @@ emil_eln_app = App(
             'results.eln.methods',
             'entry_type',
             'authors',
-            'upload_name'
-
-
+            'upload_name',
         ],
         options={
             'entry_type': Column(label='Entry type', align='left'),
@@ -67,14 +65,13 @@ emil_eln_app = App(
                 'search_quantity': 'authors.name',
                 'title': 'Select Author',
                 'layout': {
-                    'xxl': {'minH': 3, 'minW': 3, 'h': 6,  'w': 6, 'y': 0,  'x': 6},
-                    'xl':  {'minH': 3, 'minW': 3, 'h': 13, 'w': 4, 'y': 0,  'x': 6},
-                    'lg':  {'minH': 3, 'minW': 3, 'h': 6,  'w': 5, 'y': 0,  'x': 0},
-                    'md':  {'minH': 3, 'minW': 3, 'h': 6,  'w': 6, 'y': 12, 'x': 0},
-                    'sm':  {'minH': 3, 'minW': 3, 'h': 6,  'w': 6, 'y': 0,  'x': 6},
+                    'xxl': {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 6},
+                    'xl': {'minH': 3, 'minW': 3, 'h': 13, 'w': 4, 'y': 0, 'x': 6},
+                    'lg': {'minH': 3, 'minW': 3, 'h': 6, 'w': 5, 'y': 0, 'x': 0},
+                    'md': {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 12, 'x': 0},
+                    'sm': {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 6},
                 },
             },
-
             # Upload selector
             {
                 'type': 'terms',
@@ -83,13 +80,12 @@ emil_eln_app = App(
                 'title': 'Select Upload',
                 'layout': {
                     'xxl': {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 6},
-                    'xl':  {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 0},
-                    'lg':  {'minH': 3, 'minW': 3, 'h': 6, 'w': 5, 'y': 0, 'x': 5},
-                    'md':  {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 6},
-                    'sm':  {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 6},
+                    'xl': {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 0},
+                    'lg': {'minH': 3, 'minW': 3, 'h': 6, 'w': 5, 'y': 0, 'x': 5},
+                    'md': {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 6},
+                    'sm': {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 6},
                 },
             },
-
             # Methods/schema selection
             {
                 'type': 'terms',
@@ -98,14 +94,12 @@ emil_eln_app = App(
                 'title': 'Select Type',
                 'layout': {
                     'xxl': {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 12},
-                    'xl':  {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 20},
-                    'lg':  {'minH': 3, 'minW': 3, 'h': 6, 'w': 5, 'y': 0, 'x': 10},
-                    'md':  {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 12},
-                    'sm':  {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 12},
+                    'xl': {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 20},
+                    'lg': {'minH': 3, 'minW': 3, 'h': 6, 'w': 5, 'y': 0, 'x': 10},
+                    'md': {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 12},
+                    'sm': {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 12},
                 },
             },
-
-
             # Element selector (periodic table)
             {
                 'type': 'periodic_table',
@@ -113,14 +107,12 @@ emil_eln_app = App(
                 'title': 'Select Material(s)',
                 'layout': {
                     'xxl': {'minH': 3, 'minW': 3, 'h': 9, 'w': 12, 'y': 0, 'x': 12},
-                    'xl':  {'minH': 3, 'minW': 3, 'h': 6, 'w': 10, 'y': 0, 'x': 10},
-                    'lg':  {'minH': 3, 'minW': 3, 'h': 6, 'w': 9,  'y': 0, 'x': 15},
-                    'md':  {'minH': 3, 'minW': 3, 'h': 9, 'w': 12, 'y': 0, 'x': 12},
-                    'sm':  {'minH': 3, 'minW': 3, 'h': 9, 'w': 12, 'y': 0, 'x': 12},
+                    'xl': {'minH': 3, 'minW': 3, 'h': 6, 'w': 10, 'y': 0, 'x': 10},
+                    'lg': {'minH': 3, 'minW': 3, 'h': 6, 'w': 9, 'y': 0, 'x': 15},
+                    'md': {'minH': 3, 'minW': 3, 'h': 9, 'w': 12, 'y': 0, 'x': 12},
+                    'sm': {'minH': 3, 'minW': 3, 'h': 9, 'w': 12, 'y': 0, 'x': 12},
                 },
             },
-
-
         ]
     },
 )
