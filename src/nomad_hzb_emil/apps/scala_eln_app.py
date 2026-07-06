@@ -30,9 +30,7 @@ scala_eln_app = App(
             'results.eln.methods',
             'entry_type',
             'authors',
-            'upload_name'
-
-
+            'upload_name',
         ],
         options={
             'entry_type': Column(label='Entry type', align='left'),
@@ -63,8 +61,6 @@ scala_eln_app = App(
     ),
     dashboard={
         'widgets': [
-
-
             # Upload selector
             {
                 'type': 'terms',
@@ -73,13 +69,12 @@ scala_eln_app = App(
                 'title': 'Select Upload',
                 'layout': {
                     'xxl': {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 6},
-                    'xl':  {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 0},
-                    'lg':  {'minH': 3, 'minW': 3, 'h': 6, 'w': 5, 'y': 0, 'x': 5},
-                    'md':  {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 6},
-                    'sm':  {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 6},
+                    'xl': {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 0},
+                    'lg': {'minH': 3, 'minW': 3, 'h': 6, 'w': 5, 'y': 0, 'x': 5},
+                    'md': {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 6},
+                    'sm': {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 6},
                 },
             },
-
             # Methods/schema selection
             {
                 'type': 'terms',
@@ -88,14 +83,12 @@ scala_eln_app = App(
                 'title': 'Select Type',
                 'layout': {
                     'xxl': {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 12},
-                    'xl':  {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 20},
-                    'lg':  {'minH': 3, 'minW': 3, 'h': 6, 'w': 5, 'y': 0, 'x': 10},
-                    'md':  {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 12},
-                    'sm':  {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 12},
+                    'xl': {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 20},
+                    'lg': {'minH': 3, 'minW': 3, 'h': 6, 'w': 5, 'y': 0, 'x': 10},
+                    'md': {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 12},
+                    'sm': {'minH': 3, 'minW': 3, 'h': 6, 'w': 6, 'y': 0, 'x': 12},
                 },
             },
-
-
             # Element selector (periodic table)
             {
                 'type': 'periodic_table',
@@ -103,14 +96,12 @@ scala_eln_app = App(
                 'title': 'Select Material(s)',
                 'layout': {
                     'xxl': {'minH': 3, 'minW': 3, 'h': 9, 'w': 12, 'y': 0, 'x': 12},
-                    'xl':  {'minH': 3, 'minW': 3, 'h': 6, 'w': 10, 'y': 0, 'x': 10},
-                    'lg':  {'minH': 3, 'minW': 3, 'h': 6, 'w': 9,  'y': 0, 'x': 15},
-                    'md':  {'minH': 3, 'minW': 3, 'h': 9, 'w': 12, 'y': 0, 'x': 12},
-                    'sm':  {'minH': 3, 'minW': 3, 'h': 9, 'w': 12, 'y': 0, 'x': 12},
+                    'xl': {'minH': 3, 'minW': 3, 'h': 6, 'w': 10, 'y': 0, 'x': 10},
+                    'lg': {'minH': 3, 'minW': 3, 'h': 6, 'w': 9, 'y': 0, 'x': 15},
+                    'md': {'minH': 3, 'minW': 3, 'h': 9, 'w': 12, 'y': 0, 'x': 12},
+                    'sm': {'minH': 3, 'minW': 3, 'h': 9, 'w': 12, 'y': 0, 'x': 12},
                 },
             },
-
-
         ]
     },
 )
