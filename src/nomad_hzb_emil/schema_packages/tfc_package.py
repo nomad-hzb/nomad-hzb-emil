@@ -56,7 +56,7 @@ class TFC_Equipment(Equipment, EntryData):
 # %% ####################### Deposition
 
 
-class TFC_Sputtering(MultiTargetSputtering, PlotSection, EntryData):
+class Prevac_Sputtering(MultiTargetSputtering, PlotSection, EntryData):
     """Custom metadata schema for (multitarget) Sputtering deposition (thin-film) sample synthesis at HZB Thin-Film Catalysts and Reactors group."""
 
     m_def = Section(
@@ -146,7 +146,8 @@ class TFC_Sputtering(MultiTargetSputtering, PlotSection, EntryData):
                         font=dict(color='white'),
                     ),
                     cells=dict(
-                        values=[value_list, ['', ''] + target_names * 3, *cells],
+                        values=[value_list, ['', ''] +
+                                target_names * 3, *cells],
                         fill_color=[color_list * len(header_values)],
                         line_color='darkslategray',
                     ),
@@ -175,7 +176,8 @@ class TFC_Sputtering(MultiTargetSputtering, PlotSection, EntryData):
                     if self.datetime is None
                     else self.datetime
                 )
-                self.sample_lab_label = information_values.get('Sample Lab label')
+                self.sample_lab_label = information_values.get(
+                    'Sample Lab label')
                 self.holder = information_values.get('Holder')
                 self.substrate = information_values.get('Substrate')
                 self.sample_owner = information_values.get('Sample Owner')
@@ -226,7 +228,8 @@ class TFC_Sputtering(MultiTargetSputtering, PlotSection, EntryData):
                         get_observables,
                     )
 
-                    self.observables = get_observables(observables_df, num_targets)
+                    self.observables = get_observables(
+                        observables_df, num_targets)
 
         fig1 = self.make_targets_process_table()
         if fig1:
@@ -258,11 +261,11 @@ def load_XRF_txt(input_file):
     c_old = ''
     for i in range(len(pos) - 1):
         c1 = (
-            head[0][pos[i] : pos[i + 1]].strip()
-            if head[0][pos[i] : pos[i + 1]].strip()
+            head[0][pos[i]: pos[i + 1]].strip()
+            if head[0][pos[i]: pos[i + 1]].strip()
             else c_old
         )
-        c2 = head[1][pos[i] : pos[i + 1]].strip()
+        c2 = head[1][pos[i]: pos[i + 1]].strip()
         col.append((c1, c2))
         c_old = c1
     input_file.seek(0)
@@ -315,10 +318,12 @@ class TFC_XRFLibrary(XRFLibrary, EntryData, PlotSection):
                 thickness = single_library.get('layer')[1].get('thickness')
                 composition = single_library.get('layer')[1].get('composition')
                 composition_names = [element.name for element in composition]
-                composition_amounts = [element.amount for element in composition]
+                composition_amounts = [
+                    element.amount for element in composition]
                 if overview_df.empty:
                     overview_df = overview_df.reindex(
-                        columns=['x', 'y', 'Thickness [nm]'] + composition_names
+                        columns=['x', 'y', 'Thickness [nm]'] +
+                        composition_names
                     )
                 overview_df.loc[len(overview_df)] = [
                     x,
@@ -326,7 +331,8 @@ class TFC_XRFLibrary(XRFLibrary, EntryData, PlotSection):
                     thickness,
                 ] + composition_amounts
         except (IndexError, KeyError) as e:
-            logger.debug(f'The XRF Library does not have the expected structure. {e}')
+            logger.debug(
+                f'The XRF Library does not have the expected structure. {e}')
         return overview_df
 
     def make_library_overview_table(self, overview_df):
@@ -340,7 +346,8 @@ class TFC_XRFLibrary(XRFLibrary, EntryData, PlotSection):
                         font=dict(color='white'),
                     ),
                     cells=dict(
-                        values=[overview_df[col] for col in overview_df.columns],
+                        values=[overview_df[col]
+                                for col in overview_df.columns],
                         line_color='darkslategray',
                     ),
                 )
@@ -367,7 +374,8 @@ class TFC_XRFLibrary(XRFLibrary, EntryData, PlotSection):
             )
         )
         fig.update_layout(
-            title=dict(text=f'Library Overview {characteristic}', y=1.0, yanchor='top'),
+            title=dict(
+                text=f'Library Overview {characteristic}', y=1.0, yanchor='top'),
             xaxis_title='X-Position (0.1mm)',
             yaxis_title='Y-Position (0.1mm)',
             xaxis=dict(
@@ -391,7 +399,8 @@ class TFC_XRFLibrary(XRFLibrary, EntryData, PlotSection):
         with archive.m_context.raw_file(archive.metadata.mainfile, 'rt') as f:
             os.path.basename(f.name)
             if not self.samples:
-                set_sample_reference(archive, self, self.data_folder.split('_')[0])
+                set_sample_reference(
+                    archive, self, self.data_folder.split('_')[0])
 
         if self.composition_file and self.data_folder:
             file_path = os.path.join(self.data_folder, self.composition_file)
@@ -414,7 +423,8 @@ class TFC_XRFLibrary(XRFLibrary, EntryData, PlotSection):
             with archive.m_context.raw_file(
                 os.path.join(self.data_folder, files[0]), 'rb'
             ) as f:
-                _, energy, measurement_rows, positions_array, _, _ = xrf_read([f])
+                _, energy, measurement_rows, positions_array, _, _ = xrf_read([
+                                                                              f])
 
             self.datetime = convert_datetime(
                 measurement_rows[0]['DateTime'],
@@ -468,7 +478,8 @@ class TFC_XRFLibrary(XRFLibrary, EntryData, PlotSection):
                 measurements.append(
                     XRFSingleLibraryMeasurement(
                         data_file=[
-                            os.path.basename(os.path.join(self.data_folder, file))
+                            os.path.basename(os.path.join(
+                                self.data_folder, file))
                         ],
                         position_x=ar[0][0],  # positions_array[0, i],
                         position_y=ar[1][0],  # positions_array[1, i],
@@ -481,7 +492,8 @@ class TFC_XRFLibrary(XRFLibrary, EntryData, PlotSection):
             overview_df = self.get_xrf_overview(logger)
             fig1 = self.make_library_overview_table(overview_df)
             library_figures = [
-                PlotlyFigure(label='XRF Overview', figure=fig1.to_plotly_json())
+                PlotlyFigure(label='XRF Overview',
+                             figure=fig1.to_plotly_json())
             ]
             for characteristic in overview_df.columns:
                 if characteristic in ('x', 'y'):
@@ -548,14 +560,17 @@ def set_single_xrd_measurement_metadata(row):
     )
     entry.metaljet_spotsize_x_um = get_value(row['metaljet spotsize_x_um,m'])
     entry.metaljet_spotsize_y_um = get_value(row['metaljet spotsize_y_um,m'])
-    entry.metaljet_spot_position_x_um = get_value(row['metaljet spot_position_x_um,m'])
-    entry.metaljet_spot_position_y_um = get_value(row['metaljet spot_position_y_um,m'])
+    entry.metaljet_spot_position_x_um = get_value(
+        row['metaljet spot_position_x_um,m'])
+    entry.metaljet_spot_position_y_um = get_value(
+        row['metaljet spot_position_y_um,m'])
     entry.metaljet_jet_pressure = get_value(row['metaljet jet_pressure,m'])
     entry.metaljet_vacuum_pressure_mbar = get_value(
         row['metaljet vacuum_pressure_mbar,m']
     )
     entry.detector_position_pos = get_value(row['detector_position pos'])
-    entry.detector_position_rel_pos = get_value(row['detector_position rel_pos'])
+    entry.detector_position_rel_pos = get_value(
+        row['detector_position rel_pos'])
     entry.detector_position_valid = get_value(row['detector_position valid'])
     entry.filter_open = get_value(row['filter_ open'])
 
@@ -660,9 +675,11 @@ def xrd_read(file_object):
     for _ in range(23):
         next(file_object)
     try:
-        df = pd.read_csv(file_object, sep='    ', decimal='.', header=None, dtype=float)
+        df = pd.read_csv(file_object, sep='    ', decimal='.',
+                         header=None, dtype=float)
     except Exception:
-        df = pd.read_csv(file_object, sep='    ', decimal=',', header=None, dtype=float)
+        df = pd.read_csv(file_object, sep='    ', decimal=',',
+                         header=None, dtype=float)
     return df
 
 
@@ -696,7 +713,8 @@ class TFC_XRDMetalJetLibrary(XRDLibrary, EntryData):
         ],
     )
 
-    data_folder = Quantity(type=str, a_eln=dict(component='StringEditQuantity'))
+    data_folder = Quantity(type=str, a_eln=dict(
+        component='StringEditQuantity'))
 
     data_file = Quantity(
         type=str,
@@ -712,7 +730,8 @@ class TFC_XRDMetalJetLibrary(XRDLibrary, EntryData):
         with archive.m_context.raw_file(archive.metadata.mainfile, 'rt') as f:
             os.path.basename(f.name)
             if not self.samples:
-                set_sample_reference(archive, self, self.data_folder.split('_')[0])
+                set_sample_reference(
+                    archive, self, self.data_folder.split('_')[0])
         if self.data_file and self.data_folder:
             file_path = os.path.join(self.data_folder, self.data_file)
             measurements = []

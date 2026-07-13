@@ -10,7 +10,7 @@ class EMILGeneralProcessParserEntryPoint(ParserEntryPoint):
         return EMILGeneralProcessParser(**self.dict())
 
 
-class TFCSputteringParserEntryPoint(ParserEntryPoint):
+class PrevacSputteringParserEntryPoint(ParserEntryPoint):
     def load(self):
         from nomad_hzb_emil.parsers.tfc_parser import TFCSputteringParser
 
@@ -24,9 +24,9 @@ emil_general_process_parser = EMILGeneralProcessParserEntryPoint(
 )
 
 
-tfc_sputtering_parser = TFCSputteringParserEntryPoint(
-    name='TFCSputteringParser',
-    description='Parse xlsx files with sputtering information. Files are defined for the Thin Film Catalysis Group.',
+prevac_sputtering_parser = PrevacSputteringParserEntryPoint(
+    name='PrevacSputteringParser',
+    description='Parse xlsx files with sputtering information. Files are defined for the Prevac sputtering machine at EMIL.',
     mainfile_name_re=r'.+\.xlsx',
     mainfile_mime_re=r'^(application\/vnd\.(openxmlformats-officedocument\.spreadsheetml\.sheet|oasis\.opendocument\.spreadsheet))$',
     mainfile_contents_dict={

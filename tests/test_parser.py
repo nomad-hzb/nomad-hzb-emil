@@ -7,7 +7,7 @@ from nomad.client import normalize_all, parse
 
 @pytest.fixture(
     params=[
-        'tfc_sputtering.xlsx',
+        'prevac_sputtering.xlsx',
 
     ]
 )
@@ -72,8 +72,8 @@ def get_multiple_archives(file_base):
     return measurement_archive_list
 
 
-def test_tfc_sputtering_parser():
-    file = 'tfc_sputtering.xlsx'
+def test_prevac_sputtering_parser():
+    file = 'prevac_sputtering.xlsx'
     archive = get_archive(file)
     assert archive.data
     assert archive.data.targets

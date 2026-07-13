@@ -44,7 +44,7 @@ from nomad_hzb_emil.parsers.emil_general_parser import (
 from nomad.parsing import MatchingParser
 
 from nomad_hzb_emil.schema_packages.tfc_package import (
-    TFC_Sputtering,
+    Prevac_Sputtering,
     TFC_XRDMetalJetLibrary,
     TFC_XRFLibrary,
 )
@@ -63,7 +63,7 @@ class TFCSputteringParser(MatchingParser):
     def parse(self, mainfile: str, archive: EntryArchive, logger) -> None:
         file_name = mainfile.rsplit('/', maxsplit=1)[-1]
 
-        entry = TFC_Sputtering()
+        entry = Prevac_Sputtering()
         entry.name = file_name
         entry.data_file = file_name
 
@@ -76,14 +76,14 @@ class TFCSputteringParser(MatchingParser):
         archive.data = ParsedSputteringFile(activity=ref)
         archive.metadata.entry_name = file_name.split('.')[0].replace('-', ' ')
 
-        # TODO remove the next code block if all GeneralProcess entries matching the TFC_Sputtering are replaced
+        # TODO remove the next code block if all GeneralProcess entries matching the Prevac_Sputtering are replaced
         file_name_archive = f'{file_name}.archive.json'
         new_entry_created = create_archive(entry, archive, file_name_archive)
         eid = get_entry_id_from_file_name(file_name_archive, archive)
         ref = get_reference(archive.metadata.upload_id, eid)
         if not new_entry_created:
             new_entry = update_general_process_entries(
-                entry, eid, archive, logger, TFC_Sputtering()
+                entry, eid, archive, logger, Prevac_Sputtering()
             )
             if new_entry is not None:
                 create_archive(new_entry, archive,
