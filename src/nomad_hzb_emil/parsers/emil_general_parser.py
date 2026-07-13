@@ -65,7 +65,8 @@ class EMILGeneralProcessParser(MatchingParser):
             entry.method = file_name_split[-2]
 
         archive.metadata.entry_name = file_name
-        set_sample_reference(archive, entry, sample_id, archive.metadata.upload_id)
+        set_sample_reference(archive, entry, sample_id,
+                             archive.metadata.upload_id)
         file_name_archive = f'{file_name}.archive.json'
         create_archive(entry, archive, file_name_archive)
 
@@ -73,3 +74,41 @@ class EMILGeneralProcessParser(MatchingParser):
         ref = get_reference(archive.metadata.upload_id, eid)
         archive.data = ParsedGeneralProcessFile(activity=ref)
         archive.metadata.entry_name = file_name.split('.')[0].replace('-', ' ')
+
+
+# I had to add it for the TFC parser
+
+def update_general_process_entries(entry, entry_id, archive, logger, entry_class):
+    from nomad import files
+    from nomad.search import search
+
+    query = {
+        'entry_id': entry_id,
+    }
+    search_result = search(
+        owner='all', query=query, user_id=archive.metadata.main_author.user_id
+    )
+    entry_type = (
+        search_result.data[0].get('entry_type')
+        if len(search_result.data) == 1
+        else None
+    )
+    if entry_type != 'HZB_GeneralProcess':
+        return None
+    new_entry_dict = entry.m_to_dict()
+    res = search_result.data[0]
+    try:
+        # Open Archives
+        with files.UploadFiles.get(upload_id=res['upload_id']).read_archive(
+            entry_id=res['entry_id']
+        ) as ar:
+            entry_id = res['entry_id']
+            entry_data = ar[entry_id]['data']
+            entry_data.pop('m_def', None)
+            new_entry_dict.update(entry_data)
+    except Exception:
+        pass
+        # logger.error('Error in processing data: ', e)
+
+    new_entry = entry_class.m_from_dict(new_entry_dict)
+    return new_entry

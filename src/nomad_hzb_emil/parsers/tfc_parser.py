@@ -36,6 +36,11 @@ from nomad.datamodel.metainfo.basesections import (
 from nomad.metainfo import (
     Quantity,
 )
+
+from nomad_hzb_emil.parsers.emil_general_parser import (
+    update_general_process_entries,
+)
+
 from nomad.parsing import MatchingParser
 
 from nomad_hzb_emil.schema_packages.tfc_package import (
@@ -81,7 +86,8 @@ class TFCSputteringParser(MatchingParser):
                 entry, eid, archive, logger, TFC_Sputtering()
             )
             if new_entry is not None:
-                create_archive(new_entry, archive, file_name_archive, overwrite=True)
+                create_archive(new_entry, archive,
+                               file_name_archive, overwrite=True)
         archive.data = ParsedSputteringFile(activity=ref)
         archive.metadata.entry_name = file_name.split('.')[0].replace('-', ' ')
 
@@ -108,7 +114,8 @@ class TFCXRFParser(MatchingParser):
         entry.name = f'XRF {entry.data_folder}'
 
         file_name = f'{"_".join(mainfile.split("/")[-2:])}.archive.json'
-        archive.data = ParsedXRFFile(activity=create_archive(entry, archive, file_name))
+        archive.data = ParsedXRFFile(
+            activity=create_archive(entry, archive, file_name))
         archive.metadata.entry_name = f'XRF Raw {entry.data_folder}'
 
 
@@ -134,5 +141,6 @@ class TFCXRDParser(MatchingParser):
         entry.name = f'XRD {entry.data_folder}'
 
         file_name = f'{"_".join(mainfile.split("/")[-2:])}.archive.json'
-        archive.data = ParsedXRDFile(activity=create_archive(entry, archive, file_name))
+        archive.data = ParsedXRDFile(
+            activity=create_archive(entry, archive, file_name))
         archive.metadata.entry_name = f'XRD Raw {entry.data_folder}'
