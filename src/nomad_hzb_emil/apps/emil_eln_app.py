@@ -17,11 +17,7 @@ emil_eln_app = App(
     readme="""
     Explore the data from EMIL Oasis.
     """,
-    filters=Filters(
-        include=[
-            # '*#nomad_chemical_energy.schema_packages.hzb_catlab_package.CatLab_XYSample',
-        ]
-    ),
+    filters=Filters(include=[]),
     columns=Columns(
         selected=[
             'results.material.elements',
@@ -40,9 +36,7 @@ emil_eln_app = App(
             'results.material.elements': Column(label='Elements', align='left'),
         },
     ),
-    filters_locked={
-        # 'section_defs.definition_qualified_name': 'nomad_chemical_energy.schema_packages.hzb_catlab_package.CatLab_XYSample'
-    },
+    filters_locked={},
     filter_menus=FilterMenus(
         options={
             'material': FilterMenu(label='Material', level=0),

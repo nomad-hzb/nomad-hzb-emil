@@ -18,11 +18,7 @@ scala_eln_app = App(
     readme="""
     Explore the data from the SCALA lab.
     """,
-    filters=Filters(
-        include=[
-            # '*#nomad_chemical_energy.schema_packages.hzb_catlab_package.CatLab_XYSample',
-        ]
-    ),
+    filters=Filters(include=[]),
     columns=Columns(
         selected=[
             'results.material.elements',
@@ -43,8 +39,6 @@ scala_eln_app = App(
     ),
     filters_locked={
         'authors.name': 'Scala Hzb'  # display only uploads from Scala lab
-        # 'authors.name': 'Dimitra Gkogkou'  # for local test
-        # 'section_defs.definition_qualified_name': 'nomad_chemical_energy.schema_packages.hzb_catlab_package.CatLab_XYSample'
     },
     filter_menus=FilterMenus(
         options={
