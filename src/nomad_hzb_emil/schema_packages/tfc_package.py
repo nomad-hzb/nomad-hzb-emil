@@ -16,25 +16,15 @@
 # limitations under the License.
 #
 
-import os
 
-import numpy as np
 import pandas as pd
 import plotly.graph_objs as go
-from baseclasses import SingleLibraryMeasurement
-from baseclasses.characterizations import (
-    XRDLibrary,
-    XRFComposition,
-    XRFLayer,
-    XRFLibrary,
-    XRFSingleLibraryMeasurement,
-)
 from baseclasses.chemical_energy import Equipment
-from baseclasses.helper.utilities import convert_datetime, set_sample_reference
+from baseclasses.helper.utilities import set_sample_reference
 from baseclasses.vapour_based_deposition import MultiTargetSputtering
 from nomad.datamodel.data import EntryData
 from nomad.datamodel.metainfo.plot import PlotlyFigure, PlotSection
-from nomad.metainfo import Datetime, Quantity, SchemaPackage, Section, SubSection
+from nomad.metainfo import SchemaPackage, Section
 
 m_package = SchemaPackage()
 
@@ -247,7 +237,6 @@ class Prevac_Sputtering(MultiTargetSputtering, PlotSection, EntryData):
 
 
 # %%######################## Measurements
-
 
 
 # %%######################## Generic Entries

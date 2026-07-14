@@ -15,13 +15,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import datetime
 
 from baseclasses.helper.utilities import (
     create_archive,
     get_entry_id_from_file_name,
     get_reference,
-    set_sample_reference,
 )
 from nomad.datamodel import EntryArchive
 from nomad.datamodel.data import (
@@ -86,4 +84,3 @@ class TFCSputteringParser(MatchingParser):
                 create_archive(new_entry, archive, file_name_archive, overwrite=True)
         archive.data = ParsedSputteringFile(activity=ref)
         archive.metadata.entry_name = file_name.split('.')[0].replace('-', ' ')
-
