@@ -1,6 +1,5 @@
 import os
 
-import pandas as pd
 import pytest
 from nomad.client import normalize_all, parse
 
@@ -8,7 +7,6 @@ from nomad.client import normalize_all, parse
 @pytest.fixture(
     params=[
         'prevac_sputtering.xlsx',
-
     ]
 )
 def parsed_archive(request):
@@ -17,8 +15,7 @@ def parsed_archive(request):
     """
     rel_file = os.path.join('tests', 'data', request.param)
     file_archive = parse(rel_file)[0]
-    measurement = os.path.join(
-        'tests', 'data', request.param + '.archive.json')
+    measurement = os.path.join('tests', 'data', request.param + '.archive.json')
     assert file_archive.data.activity
     archive_json = ''
     for file in os.listdir(os.path.join('tests/data')):

@@ -26,7 +26,8 @@ emil_general_process_parser = EMILGeneralProcessParserEntryPoint(
 
 prevac_sputtering_parser = PrevacSputteringParserEntryPoint(
     name='PrevacSputteringParser',
-    description='Parse xlsx files with sputtering information. Files are defined for the Prevac sputtering machine at EMIL.',
+    description='Parse xlsx files with sputtering information. '
+    'Files are defined for the Prevac sputtering machine at EMIL.',
     mainfile_name_re=r'.+\.xlsx',
     mainfile_mime_re=r'^(application\/vnd\.(openxmlformats-officedocument\.spreadsheetml\.sheet|oasis\.opendocument\.spreadsheet))$',
     mainfile_contents_dict={
