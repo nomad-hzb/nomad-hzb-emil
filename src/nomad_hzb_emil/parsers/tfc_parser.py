@@ -15,6 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from datetime import datetime
 
 from baseclasses.helper.utilities import (
     create_archive,
@@ -36,11 +37,9 @@ from nomad.metainfo import (
 )
 from nomad.parsing import MatchingParser
 
-from nomad_hzb_emil.parsers.emil_general_parser import (
-    update_general_process_entries,
-)
 from nomad_hzb_emil.schema_packages.tfc_package import (
     Prevac_Sputtering,
+    TFC_XRFLibrary,
 )
 
 
@@ -70,17 +69,31 @@ class TFCSputteringParser(MatchingParser):
         archive.data = ParsedSputteringFile(activity=ref)
         archive.metadata.entry_name = file_name.split('.')[0].replace('-', ' ')
 
-        # TODO remove the next code block if all GeneralProcess entries matching
-        #      the Prevac_Sputtering are replaced
+
+class ParsedXRFFile(EntryData):
+    activity = Quantity(
+        type=Activity,
+        a_eln=ELNAnnotation(
+            component='ReferenceEditQuantity',
+        ),
+    )
+
+
+class TFCXRFParser(MatchingParser):
+    def parse(self, mainfile: str, archive: EntryArchive, logger) -> None:
+
+        file_name = mainfile.rsplit('raw/', maxsplit=1)[-1]
+
+        entry = TFC_XRFLibrary(composition_file=file_name)
+        entry.data_folder = mainfile.split('/')[-2]
+
+        entry.datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+        entry.name = f'XRF {entry.data_folder}'
+
         file_name_archive = f'{file_name}.archive.json'
-        new_entry_created = create_archive(entry, archive, file_name_archive)
+        create_archive(entry, archive, file_name_archive)
         eid = get_entry_id_from_file_name(file_name_archive, archive)
         ref = get_reference(archive.metadata.upload_id, eid)
-        if not new_entry_created:
-            new_entry = update_general_process_entries(
-                entry, eid, archive, logger, Prevac_Sputtering()
-            )
-            if new_entry is not None:
-                create_archive(new_entry, archive, file_name_archive, overwrite=True)
-        archive.data = ParsedSputteringFile(activity=ref)
-        archive.metadata.entry_name = file_name.split('.')[0].replace('-', ' ')
+
+        archive.data = ParsedXRFFile(activity=ref)
+        archive.metadata.entry_name = f'XRF Raw {entry.data_folder}'
