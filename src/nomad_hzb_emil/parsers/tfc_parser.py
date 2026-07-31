@@ -15,7 +15,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from datetime import datetime
 
 from baseclasses.helper.utilities import (
     create_archive,
@@ -85,9 +84,8 @@ class TFCXRFParser(MatchingParser):
         file_name = mainfile.rsplit('raw/', maxsplit=1)[-1]
 
         entry = TFC_XRFLibrary(composition_file=file_name)
-        entry.data_folder = mainfile.split('/')[-2]
+        entry.data_folder = file_name.rsplit('/', 1)[0]
 
-        entry.datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
         entry.name = f'XRF {entry.data_folder}'
 
         file_name_archive = f'{file_name}.archive.json'

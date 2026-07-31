@@ -22,7 +22,7 @@ def patch_archive_context(monkeypatch):
             SimpleNamespace(
                 raw_file=raw_file,
                 upload_files=SimpleNamespace(
-                    raw_listdir=lambda folder: os.scandir(f'{TEST_DIR}/{folder}' or '.')
+                    raw_listdir=lambda folder: os.scandir(folder or '.')
                 ),
             ),
         )

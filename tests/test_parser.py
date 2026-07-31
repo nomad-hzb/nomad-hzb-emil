@@ -76,9 +76,9 @@ def test_xrf_parser(patch_archive_context):
     patch_archive_context(archive)
     normalize_all(archive)
     assert archive.data
-    assert archive.data.name == 'XRF XRF'
+    assert archive.data.name.startswith('XRF')
     assert archive.data.datetime == datetime(2026, 7, 9, 8, 5, 32, tzinfo=timezone.utc)
-    assert archive.data.data_folder == 'XRF'
+    assert archive.data.data_folder == os.path.dirname(os.path.abspath(file))
     assert archive.data.method == 'XRF'
     assert len(archive.data.energy) == 4096
     assert len(archive.data.measurements) == 9

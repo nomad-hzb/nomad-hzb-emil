@@ -434,7 +434,7 @@ class TFC_XRFLibrary(XRFLibrary, EntryData, PlotSection):
         return fig
 
     def normalize(self, archive, logger):
-        if not self.samples:
+        if not self.samples and self.data_folder is not None:
             set_sample_reference(archive, self, self.data_folder.split('_')[0])
 
         if self.composition_file and self.data_folder:
