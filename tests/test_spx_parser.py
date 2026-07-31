@@ -1,13 +1,3 @@
-"""Regression test for xrf_spx_parser.py against a real sample .spx file.
-
-Complements test_xrf_spx_parser.py's synthetic-XML tests: those give tight
-control over edge cases (missing elements, ambiguous dates, small grids)
-that are hard to find naturally in one real file; this test instead checks
-that the parser still produces sane, correctly-typed output against an
-actual Bruker-generated file, which may contain structure a hand-written
-template doesn't anticipate.
-"""
-
 import pytest
 
 from nomad_hzb_emil.schema_packages.file_parser import xrf_spx_parser
