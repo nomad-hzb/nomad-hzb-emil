@@ -118,6 +118,7 @@ emil_general_process_parser = "nomad_hzb_emil.parsers:emil_general_process_parse
 
 tfc_package = "nomad_hzb_emil.schema_packages:tfc_schema_package"
 prevac_sputtering_parser = "nomad_hzb_emil.parsers:prevac_sputtering_parser"
+tfc_xrf_parser = "nomad_hzb_emil.parsers:tfc_xrf_parser"
 
 emil_lab_voila_app = "nomad_hzb_emil.apps:emil_lab_voila_app"
 emil_eln_app = "nomad_hzb_emil.apps:emil_eln_app"

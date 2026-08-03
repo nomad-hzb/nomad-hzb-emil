@@ -16,11 +16,18 @@
 # limitations under the License.
 #
 
+import os
 
 import pandas as pd
 import plotly.graph_objs as go
+from baseclasses.characterizations import (
+    XRFComposition,
+    XRFLayer,
+    XRFLibrary,
+    XRFSingleLibraryMeasurement,
+)
 from baseclasses.chemical_energy import Equipment
-from baseclasses.helper.utilities import set_sample_reference
+from baseclasses.helper.utilities import convert_datetime, set_sample_reference
 from baseclasses.vapour_based_deposition import MultiTargetSputtering
 from nomad.datamodel.data import EntryData
 from nomad.datamodel.metainfo.plot import PlotlyFigure, PlotSection
@@ -184,9 +191,7 @@ class Prevac_Sputtering(MultiTargetSputtering, PlotSection, EntryData):
                         if sample_id is None
                         else sample_id
                     )
-                    set_sample_reference(
-                        archive, self, sample_id, archive.metadata.upload_id
-                    )
+                    set_sample_reference(archive, self, sample_id, None)
 
                 if self.samples:
                     for s in self.samples:
@@ -237,6 +242,268 @@ class Prevac_Sputtering(MultiTargetSputtering, PlotSection, EntryData):
 
 
 # %%######################## Measurements
+
+
+def load_XRF_txt(input_file):
+    names_line, units_line, data_line = (next(input_file) for _ in range(3))
+
+    # A column boundary is where data_line has a space AND names_line
+    # also has a space at that position (end of a name/value token in both).
+    boundaries = [0]
+    in_token = False
+    for i, char in enumerate(data_line):
+        if char != ' ':
+            in_token = True
+        elif in_token and names_line[i] == ' ':
+            boundaries.append(i)
+            in_token = False
+    boundaries.append(-1)
+
+    columns = []
+    last_name = ''
+    for start, end in zip(boundaries, boundaries[1:]):
+        name = names_line[start:end].strip() or last_name
+        unit = units_line[start:end].strip()
+        columns.append((name, unit))
+        last_name = name
+
+    input_file.seek(0)
+    for decimal in (',', '.'):
+        try:
+            return pd.read_csv(
+                input_file,
+                names=columns,
+                header=None,
+                skiprows=2,
+                sep=r'\s{2,}',
+                decimal=decimal,
+                index_col=0,
+                engine='python',
+            )
+        except Exception:
+            input_file.seek(0)
+
+    raise ValueError("Could not parse file with ',' or '.' as decimal separator")
+
+
+def _spx_files_in(archive, data_folder: str) -> list[str]:
+    """Sorted basenames of all .spx files in data_folder."""
+    return sorted(
+        os.path.basename(file.path)
+        for file in archive.m_context.upload_files.raw_listdir(data_folder)
+        if file.path.endswith('.spx')
+    )
+
+
+def _read_single_spx(archive, path: str):
+    """Parse one .spx file, returning (measurement_data, position_xyz, energy)."""
+    from nomad_hzb_emil.schema_packages.file_parser.xrf_spx_parser import (
+        read as xrf_read,
+    )
+
+    with archive.m_context.raw_file(path, 'rb') as f:
+        _, energy, measurement_data, positions, _, _ = xrf_read([f])
+    return measurement_data, positions[:, 0], energy
+
+
+def _layers_from_composition_row(measurement_row) -> tuple[list, set[str]]:
+    """Build XRFLayer entries + the set of material names for one composition row.
+
+    `measurement_row` is indexed by (layer_name, quantity), e.g.
+    ('L1', 'Cu at%') -> 12.3, ('L1', 'Thickness [nm]') -> 150.
+    """
+    layer_data: dict[str, dict] = {}
+    material_names: set[str] = set()
+
+    for (layer_name, quantity), value in measurement_row.items():
+        entry = layer_data.setdefault(layer_name, {})
+        if 'Thick' in quantity or 'Dicke' in quantity:
+            entry['thickness'] = value
+            continue
+        if '%' not in quantity:
+            continue
+        entry.setdefault('composition', []).append(
+            XRFComposition(amount=float(value), name=quantity)
+        )
+        material_names.add(quantity)
+
+    layers = [
+        XRFLayer(
+            layer=name,
+            composition=data.get('composition'),
+            thickness=data.get('thickness'),
+        )
+        for name, data in layer_data.items()
+    ]
+    return layers, material_names
+
+
+class TFC_XRFLibrary(XRFLibrary, EntryData, PlotSection):
+    m_def = Section(
+        label='XRF Measurement Library',
+        a_eln=dict(
+            hide=['instruments', 'steps', 'results', 'lab_id'],
+            properties=dict(
+                order=[
+                    'name',
+                ]
+            ),
+        ),
+    )
+
+    def get_xrf_overview(self, logger):
+        overview_list = []
+        try:
+            for single_library in self.measurements:
+                library_dict = {
+                    'x': single_library.get('position_x'),
+                    'y': single_library.get('position_y'),
+                }
+                for layer in single_library.get('layer') or []:
+                    if layer.get('thickness') is None:
+                        # this is the substrate
+                        continue
+                    library_dict[f'{layer.get("layer")} Thickness [nm]'] = layer.get(
+                        'thickness'
+                    )
+                    for composition in layer.get('composition'):
+                        library_dict[composition.get('name')] = composition.get(
+                            'amount'
+                        )
+                overview_list.append(library_dict)
+            return pd.DataFrame(overview_list)
+        except (IndexError, KeyError) as e:
+            logger.debug(f'The XRF Library does not have the expected structure. {e}')
+
+    def make_library_overview_table(self, overview_df):
+        fig = go.Figure(
+            data=[
+                go.Table(
+                    header=dict(
+                        values=list(overview_df.columns),
+                        fill_color='grey',
+                        line_color='darkslategray',
+                        font=dict(color='white'),
+                    ),
+                    cells=dict(
+                        values=[overview_df[col] for col in overview_df.columns],
+                        line_color='darkslategray',
+                    ),
+                )
+            ]
+        )
+        return fig
+
+    def make_library_plot(self, overview_df, characteristic):
+        fig = go.Figure()
+        fig.add_trace(
+            go.Scatter(
+                x=overview_df['x'],
+                y=overview_df['y'],
+                mode='markers',
+                marker=dict(
+                    size=30,
+                    color=overview_df[characteristic],
+                    colorscale='Viridis',
+                    colorbar=dict(title=characteristic),
+                    showscale=True,
+                ),
+                text=overview_df[characteristic],
+                hovertemplate=f'x: %{{x}}<br>y: %{{y}}<br>{characteristic}: %{{text}}<extra></extra>',  # noqa: E501
+            )
+        )
+        fig.update_layout(
+            title=dict(text=f'Library Overview {characteristic}', y=1.0, yanchor='top'),
+            xaxis_title='X-Position (0.1mm)',
+            yaxis_title='Y-Position (0.1mm)',
+            xaxis=dict(
+                showgrid=False,
+                scaleanchor='y',
+                side='top',
+            ),
+            yaxis=dict(
+                showgrid=False,
+                fixedrange=True,
+                range=[max(overview_df['y']), min(overview_df['y'])],
+            ),
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            margin=dict(l=10, r=10, t=80, b=10),
+            hovermode='closest',
+        )
+        return fig
+
+    def normalize(self, archive, logger):
+        if not self.samples and self.data_folder is not None:
+            set_sample_reference(archive, self, self.data_folder.split('_')[0])
+
+        if self.composition_file and self.data_folder:
+            files = _spx_files_in(archive, self.data_folder)
+            if not files:
+                return
+
+            with archive.m_context.raw_file(self.composition_file, 'rt') as txt_file:
+                composition_data = load_XRF_txt(txt_file)
+
+            measurements = []
+            material_names: set[str] = set()
+
+            for spx_file in files:
+                spx_path = os.path.join(self.data_folder, spx_file)
+                measurement_data, position_xyz, energy = _read_single_spx(
+                    archive, spx_path
+                )
+
+                if self.datetime is None:
+                    self.datetime = convert_datetime(
+                        measurement_data['DateTime'].iat[0],
+                        datetime_format='%Y-%d-%mT%H:%M:%S.%f',
+                        utc=False,
+                    )
+
+                if self.energy is None:
+                    self.energy = energy
+
+                composition_row = composition_data.loc[os.path.splitext(spx_file)[0]]
+                layers, row_material_names = _layers_from_composition_row(
+                    composition_row
+                )
+                material_names |= row_material_names
+
+                measurements.append(
+                    XRFSingleLibraryMeasurement(
+                        data_file=[spx_path],
+                        position_x=position_xyz[0],
+                        position_y=position_xyz[1],
+                        position_z=position_xyz[2],
+                        layer=layers,
+                        name=f'{round(position_xyz[0], 5)},{round(position_xyz[1], 5)}',
+                        description=measurement_data.round(4)
+                        .T.rename_axis(None)
+                        .to_html(header=False),
+                    )
+                )
+
+            self.measurements = measurements
+            self.material_names = ','.join(sorted(material_names))
+
+        overview_df = self.get_xrf_overview(logger)
+        fig1 = self.make_library_overview_table(overview_df)
+        library_figures = [
+            PlotlyFigure(label='XRF Overview', figure=fig1.to_plotly_json())
+        ]
+        for characteristic in overview_df.columns:
+            if characteristic in ('x', 'y'):
+                continue
+            fig = self.make_library_plot(overview_df, characteristic)
+            json_fig = PlotlyFigure(
+                label=f'Library Overview {characteristic}',
+                figure=fig.to_plotly_json(),
+            )
+            library_figures.append(json_fig)
+        self.figures = library_figures
+
+        super().normalize(archive, logger)
 
 
 # %%######################## Generic Entries

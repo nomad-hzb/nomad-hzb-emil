@@ -7,14 +7,21 @@ class EMILGeneralProcessParserEntryPoint(ParserEntryPoint):
             EMILGeneralProcessParser,
         )
 
-        return EMILGeneralProcessParser(**self.dict())
+        return EMILGeneralProcessParser(**self.model_dump())
 
 
 class PrevacSputteringParserEntryPoint(ParserEntryPoint):
     def load(self):
         from nomad_hzb_emil.parsers.tfc_parser import TFCSputteringParser
 
-        return TFCSputteringParser(**self.dict())
+        return TFCSputteringParser(**self.model_dump())
+
+
+class TFCXRFLibraryParserEntryPoint(ParserEntryPoint):
+    def load(self):
+        from nomad_hzb_emil.parsers.tfc_parser import TFCXRFParser
+
+        return TFCXRFParser(**self.model_dump())
 
 
 emil_general_process_parser = EMILGeneralProcessParserEntryPoint(
@@ -35,4 +42,13 @@ prevac_sputtering_parser = PrevacSputteringParserEntryPoint(
         'Observables': {'__has_all_keys': ['Sputtering', 'Values']},
         # '__comment_symbol': '#',
     },
+)
+
+tfc_xrf_parser = TFCXRFLibraryParserEntryPoint(
+    name='TFCXRFParser',
+    description='Parse txt files with XRF. '
+    'Files are defined for the Thin Film Catalysis Group '
+    'and later combined with spx files that are located the same directory.',
+    mainfile_name_re=r'.*\.txt',
+    mainfile_contents_re=r'((([\s\S]*\bBasis\b)([\s\S]*\bSpektrum\b)([\s\S]*\bDicke\b)([\s\S]*\bBase\b)([\s\S]*\bMittelwert\b)([\s\S]*\bStd\sAbw\.?\b)([\s\S]*\bStd\sAbw\.\srel\.\s\[%\]).*)|(([\s\S]*\bSubstrate\b)([\s\S]*\bSpectrum\b)([\s\S]*\bThickn\.?\b)([\s\S]*\bBase\b)([\s\S]*\bMean\svalue\b)([\s\S]*\bStd dev\.?\b)([\s\S]*\bStd\sdev\.\srel\.\s\[%\]).*))',  # noqa: E501
 )
