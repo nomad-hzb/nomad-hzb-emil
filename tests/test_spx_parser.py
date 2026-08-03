@@ -34,3 +34,14 @@ def test_spx_file_read_end_to_end():
     assert len(dataset.spectra) == 1
     assert dataset.measurement_data.shape[0] == 1
     assert dataset.positions.shape == (3, 1)
+    x, y, z = dataset.positions.flatten()
+    assert x == 96.65
+    assert y == 142.82
+    assert z == 126.707
+    assert dataset.measurement_data['DateTime'].item() == '2026-09-07T10:05:32.000000'
+    assert dataset.measurement_data['Voltage'].item() == 50
+    assert dataset.measurement_data['Current'].item() == 199
+    assert dataset.measurement_data['RealTime'].item() == 30000
+    assert dataset.measurement_data['LifeTime'].item() == 28301
+    assert dataset.measurement_data['DeadTime'].item() == 6
+    assert dataset.measurement_data['TubeType'].item() == 'MCBM 50-0.6B Rh'
