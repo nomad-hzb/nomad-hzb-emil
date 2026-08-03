@@ -448,18 +448,20 @@ class TFC_XRFLibrary(XRFLibrary, EntryData, PlotSection):
             measurements = []
             material_names: set[str] = set()
 
-            for i, spx_file in enumerate(files):
+            for spx_file in files:
                 spx_path = os.path.join(self.data_folder, spx_file)
                 measurement_data, position_xyz, energy = _read_single_spx(
                     archive, spx_path
                 )
 
-                if i == 0:
+                if self.datetime is None:
                     self.datetime = convert_datetime(
                         measurement_data['DateTime'].iat[0],
                         datetime_format='%Y-%d-%mT%H:%M:%S.%f',
                         utc=False,
                     )
+
+                if self.energy is None:
                     self.energy = energy
 
                 composition_row = composition_data.loc[os.path.splitext(spx_file)[0]]
