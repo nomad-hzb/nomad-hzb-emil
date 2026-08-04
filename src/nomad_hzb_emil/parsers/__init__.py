@@ -27,7 +27,7 @@ class TFCXRFLibraryParserEntryPoint(ParserEntryPoint):
 emil_general_process_parser = EMILGeneralProcessParserEntryPoint(
     name='EMILGeneralProcessParser',
     description='Parser for general files starting with a sample id',
-    mainfile_name_re=r'^.*[A-Z][a-z][A-Z][a-z]\d{4}(-.*)?\.(?!.*\.*pynb$|.*\.*py$|.*\.*archive\.json$|.*\.*json$)[a-zA-Z0-9.]+$',
+    mainfile_name_re=r'^.*(?:[A-Z][a-z][A-Z][a-z]\d{4}|\d{2}-\d{3}-\d{3}|[A-Z]{2}-\d{2}-\d{3})(-.*)?\.(?!.*\.*pynb$|.*\.*py$|.*\.*archive\.json$|.*\.*json$)[a-zA-Z0-9.]+$',
 )
 
 

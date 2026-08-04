@@ -56,6 +56,10 @@ class EMILGeneralProcessParser(MatchingParser):
         file_path = mainfile.rsplit('/raw/', maxsplit=1)[-1]
         file_name = file_path.split('/')[-1]
         sample_id = file_name.split('.')[0].split('-')[0]
+        if len(sample_id) == 2:
+            # this is an ASCEND sample
+            # batch structure LT-61-000, wafer structure 61-000-000
+            sample_id = '-'.join(file_name.split('-', 3)[:3])
 
         entry = EMIL_GeneralProcess()
         entry.name = file_name
@@ -73,9 +77,6 @@ class EMILGeneralProcessParser(MatchingParser):
         ref = get_reference(archive.metadata.upload_id, eid)
         archive.data = ParsedGeneralProcessFile(activity=ref)
         archive.metadata.entry_name = file_name.split('.')[0].replace('-', ' ')
-
-
-# I had to add it for the TFC parser
 
 
 def update_general_process_entries(entry, entry_id, archive, logger, entry_class):

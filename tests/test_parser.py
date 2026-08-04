@@ -8,6 +8,9 @@ from nomad.client import normalize_all, parse
 @pytest.fixture(
     params=[
         'prevac_sputtering.xlsx',
+        'CaTe0001-generalprocess.txt',
+        'CT-61-123-generalprocess.txt',
+        '61-123-468-generalprocess.txt',
     ]
 )
 def parsed_archive(request):
