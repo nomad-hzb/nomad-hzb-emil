@@ -64,12 +64,13 @@ class EMILGeneralProcessParser(MatchingParser):
         entry = EMIL_GeneralProcess()
         entry.name = file_name
         entry.data_file = file_path
+        entry.search_sample_in_same_upload = False
         file_name_split = file_name.split('.')
         if len(file_name_split) > 2:
             entry.method = file_name_split[-2]
 
         archive.metadata.entry_name = file_name
-        set_sample_reference(archive, entry, sample_id, archive.metadata.upload_id)
+        set_sample_reference(archive, entry, sample_id, None)
         file_name_archive = f'{file_name}.archive.json'
         create_archive(entry, archive, file_name_archive)
 
