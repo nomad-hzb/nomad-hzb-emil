@@ -113,17 +113,17 @@ package-dir = { "" = "src" }
 where = ["src"]
 
 [project.entry-points.'nomad.plugin']
-emil_package_entry_point = "nomad_hzb_emil.schema_packages:emil_package_entry_point"
-emil_general_process_parser = "nomad_hzb_emil.parsers:emil_general_process_parser"
-
 tfc_package = "nomad_hzb_emil.schema_packages:tfc_schema_package"
 prevac_sputtering_parser = "nomad_hzb_emil.parsers:prevac_sputtering_parser"
 tfc_xrf_parser = "nomad_hzb_emil.parsers:tfc_xrf_parser"
 
+emil_package_entry_point = "nomad_hzb_emil.schema_packages:emil_package_entry_point"
+emil_general_process_parser = "nomad_hzb_emil.parsers:emil_general_process_parser"
+
+hzb_eln_app = "nomad_hzb_emil.apps:hzb_eln_app"
 emil_lab_voila_app = "nomad_hzb_emil.apps:emil_lab_voila_app"
 emil_eln_app = "nomad_hzb_emil.apps:emil_eln_app"
 emil_scala_app = "nomad_hzb_emil.apps:scala_eln_app"
-
 
 
 [tool.cruft]

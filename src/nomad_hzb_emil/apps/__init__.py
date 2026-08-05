@@ -19,7 +19,14 @@ from nomad.config.models.ui import (
 )
 
 from nomad_hzb_emil.apps.emil_eln_app import emil_eln_app
+from nomad_hzb_emil.apps.hzb_eln_app import hzb_eln_app
 from nomad_hzb_emil.apps.scala_eln_app import scala_eln_app
+
+hzb_eln_app = AppEntryPoint(
+    name='eln',
+    description='Search your experimental data',
+    app=hzb_eln_app,
+)
 
 emil_eln_app = AppEntryPoint(
     name='EMIL ELN',
