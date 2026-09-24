@@ -112,7 +112,7 @@ emil_lab_voila_app = AppEntryPoint(
             actions=RowActions(
                 options={
                     'launch': RowActionNorth(
-                        tool_name='voila',
+                        tool_name='nomad_north_voila',
                         filepath=f'data.notebook_file#{schema_name}',
                     )
                 }
