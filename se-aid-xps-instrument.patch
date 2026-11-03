@@ -1,0 +1,73 @@
+From 75573442dab7973d819f910ee7c0edbb5fd8908a Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Tue, 3 Nov 2026 12:12:51 +0100
+Subject: [PATCH] SE-AID XPS: reference the XPS instrument entry
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01D8LYvxiLjhKpkd3PyhNe6b
+---
+ src/nomad_hzb_emil/parsers/se_aid_parser.py | 17 +++++++++++++++++
+ tests/test_se_aid_parser.py                 |  5 +++++
+ 2 files changed, 22 insertions(+)
+
+diff --git a/src/nomad_hzb_emil/parsers/se_aid_parser.py b/src/nomad_hzb_emil/parsers/se_aid_parser.py
+index 49d5903..56581e1 100644
+--- a/src/nomad_hzb_emil/parsers/se_aid_parser.py
++++ b/src/nomad_hzb_emil/parsers/se_aid_parser.py
+@@ -33,6 +33,7 @@ from nomad.datamodel.metainfo.annotations import (
+ )
+ from nomad.datamodel.metainfo.basesections import (
+     Activity,
++    InstrumentReference,
+ )
+ from nomad.metainfo import (
+     Quantity,
+@@ -49,6 +50,14 @@ SAMPLE_ID_RE = re.compile(
+ )
+ 
+ 
++# All files recognised by this parser come from this instrument.
++# Instrument entry on the SE-AIS Oasis:
++# .../upload/id/vXP9c-6ORy2L06k4OlYC-w/entry/id/HFvOLQFJ_66lIptH5zJbQNzpNiZg
++XPS_INSTRUMENT_NAME = 'XPS-XYX'
++XPS_INSTRUMENT_UPLOAD_ID = 'vXP9c-6ORy2L06k4OlYC-w'
++XPS_INSTRUMENT_ENTRY_ID = 'HFvOLQFJ_66lIptH5zJbQNzpNiZg'
++
++
+ def get_sample_id_from_file_name(file_name):
+     """Return the sample id at the start of the file name, or None."""
+     match = SAMPLE_ID_RE.match(file_name)
+@@ -72,6 +81,14 @@ class SEAIDXPSParser(MatchingParser):
+         entry = SEAID_XPS()
+         entry.name = file_name.rsplit('.', 1)[0]
+         entry.data_file = file_path
++        entry.instruments = [
++            InstrumentReference(
++                name=XPS_INSTRUMENT_NAME,
++                reference=get_reference(
++                    XPS_INSTRUMENT_UPLOAD_ID, XPS_INSTRUMENT_ENTRY_ID
++                ),
++            )
++        ]
+ 
+         # Link the sample if the file name starts with a sample id,
+         # otherwise the sample can be added manually in the ELN.
+diff --git a/tests/test_se_aid_parser.py b/tests/test_se_aid_parser.py
+index 1a08df2..90c8098 100644
+--- a/tests/test_se_aid_parser.py
++++ b/tests/test_se_aid_parser.py
+@@ -69,6 +69,11 @@ def test_xps_parser(patch_archive_context):
+     assert data.name == 'xps_Mg_survey'
+     assert data.method == 'X-ray photoelectron spectroscopy'
+     assert not data.samples
++    assert len(data.instruments) == 1
++    assert data.instruments[0].name == 'XPS-XYX'
++    assert data.instruments[0].m_to_dict()['reference'] == (
++        '../uploads/vXP9c-6ORy2L06k4OlYC-w/archive/HFvOLQFJ_66lIptH5zJbQNzpNiZg#/data'
++    )
+     assert len(data.regions) == 1
+ 
+     region = data.regions[0]
+-- 
+2.43.0
+

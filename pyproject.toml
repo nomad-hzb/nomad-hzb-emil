@@ -117,6 +117,9 @@ tfc_package = "nomad_hzb_emil.schema_packages:tfc_schema_package"
 prevac_sputtering_parser = "nomad_hzb_emil.parsers:prevac_sputtering_parser"
 tfc_xrf_parser = "nomad_hzb_emil.parsers:tfc_xrf_parser"
 
+se_aid_package = "nomad_hzb_emil.schema_packages:se_aid_schema_package"
+se_aid_xps_parser = "nomad_hzb_emil.parsers:se_aid_xps_parser"
+
 emil_package_entry_point = "nomad_hzb_emil.schema_packages:emil_package_entry_point"
 emil_general_process_parser = "nomad_hzb_emil.parsers:emil_general_process_parser"
 
