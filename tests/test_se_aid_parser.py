@@ -48,12 +48,12 @@ def test_read_xps_txt():
 @pytest.mark.parametrize(
     'file_name, sample_id',
     [
-        ('CaTe0001-xps_Mg_survey.txt', 'CaTe0001'),
-        ('CaTe0001.txt', 'CaTe0001'),
+        ('AnVe0001-xps_Mg_survey.txt', 'AnVe0001'),
+        ('AnVe0001.txt', 'AnVe0001'),
         ('61-123-468_xps.txt', '61-123-468'),
         ('CT-61-123-xps.txt', 'CT-61-123'),
         ('xps_Mg_survey.txt', None),
-        ('CaTe00012-xps.txt', None),
+        ('AnVe00012-xps.txt', None),
     ],
 )
 def test_sample_id_from_file_name(file_name, sample_id):
@@ -94,5 +94,5 @@ def test_xps_parser_links_sample(patch_archive_context, monkeypatch):
         'nomad_hzb_emil.parsers.se_aid_parser.set_sample_reference',
         lambda archive, entry, sample_id, upload_id: calls.append(sample_id),
     )
-    parse_xps('CaTe0001-xps_Mg_survey.txt', patch_archive_context)
-    assert calls == ['CaTe0001']
+    parse_xps('AnVe0001-xps_Mg_survey.txt', patch_archive_context)
+    assert calls == ['AnVe0001']
