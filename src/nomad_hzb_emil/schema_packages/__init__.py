@@ -28,6 +28,7 @@ tfc_schema_package = TFCPackageEntryPoint(
     description='Package for Thin Film Catalysts Group',
 )
 
+
 class SEAIDPackageEntryPoint(SchemaPackageEntryPoint):
     def load(self):
         from nomad_hzb_emil.schema_packages.se_aid_package import (

@@ -23,11 +23,13 @@ class TFCXRFLibraryParserEntryPoint(ParserEntryPoint):
 
         return TFCXRFParser(**self.model_dump())
 
+
 class SEAIDXPSParserEntryPoint(ParserEntryPoint):
     def load(self):
         from nomad_hzb_emil.parsers.se_aid_parser import SEAIDXPSParser
 
         return SEAIDXPSParser(**self.model_dump())
+
 
 emil_general_process_parser = EMILGeneralProcessParserEntryPoint(
     name='EMILGeneralProcessParser',
