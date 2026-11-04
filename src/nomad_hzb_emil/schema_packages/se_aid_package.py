@@ -16,9 +16,16 @@
 # limitations under the License.
 #
 
+import re
+
 import numpy as np
 import plotly.graph_objs as go
-from baseclasses.characterizations import XPS
+from baseclasses.characterizations import (
+    XPS,
+    PESSpecsLabProdigyAnalyzerParameters,
+    PESSpecsLabProdigySettings,
+    PESSpecsLabProdigySourceParameters,
+)
 from nomad.datamodel.data import ArchiveSection, EntryData
 from nomad.datamodel.metainfo.plot import PlotlyFigure, PlotSection
 from nomad.metainfo import Quantity, SchemaPackage, Section, SubSection
@@ -28,38 +35,77 @@ from nomad_hzb_emil.schema_packages.file_parser.xps_txt_parser import read_xps_t
 m_package = SchemaPackage()
 
 
-# %% ####################### XPS
+# %% ####################### XPS-ANA-lytics EMIL SE-AID
 
 
-class SEAID_XPSRegionSettings(ArchiveSection):
-    """Acquisition settings of one XPS region as written in the file header."""
+class SEAID_XPS_ANA_RegionSettings(PESSpecsLabProdigySettings):
+    """Acquisition settings for one XPS region (survey or detail spectrum).
+    Inherits from SPECS but for the SE-AID XPS ANA-lytics instrument specific file"""
 
     m_def = Section(label='Acquisition settings')
 
-    energy_mode = Quantity(
-        type=str, description='Energy scale used for acquisition (KE or BE).'
-    )
-    start_energy = Quantity(type=np.dtype(np.float64), unit='eV')
-    end_energy = Quantity(type=np.dtype(np.float64), unit='eV')
-    energy_step = Quantity(type=np.dtype(np.float64), unit='eV')
     number_of_sweeps = Quantity(type=np.dtype(np.int64))
-    dwell_time = Quantity(
-        type=np.dtype(np.float64), unit='s', description='Dwell time per sweep.'
+    analyser_mode = Quantity(
+        type=str, description='Analyser scan mode, e.g. CAE or CRR.'
     )
-    analyser_mode = Quantity(type=str, description='e.g. CAE or CRR.')
-    pass_energy = Quantity(
-        type=np.dtype(np.float64),
-        description='Pass energy in eV (CAE) or retard ratio (CRR).',
-    )
-    magnification = Quantity(type=str)
     divide_voltages_by_10 = Quantity(type=str)
-    excitation_source = Quantity(type=str)
-    excitation_energy = Quantity(type=np.dtype(np.float64), unit='eV')
-    analyser_workfunction = Quantity(type=np.dtype(np.float64), unit='eV')
     aperture = Quantity(type=str)
-    exit_slit = Quantity(type=str)
-    notes = Quantity(type=str)
-    creation_comment = Quantity(type=str)
+    excitation_source = Quantity(
+        type=str, description='Excitation source as written in the file.'
+    )
+
+
+# file header entry -> quantity of SEAID_XPSRegionSettings
+settings_mapping = {
+    'transition': 'region',
+    'energy_mode': 'scan_variable',
+    'start_energy': 'energy_minimum',
+    'end_energy': 'energy_maximum',
+    'energy_step': 'step_size',
+    'dwell_time': 'dwell_time',
+    'pass_energy': 'pass_energy',
+    'excitation_energy': 'excitation_energy',
+    'magnification': 'analyzer_lens_mode',
+    'exit_slit': 'analyzer_slit',
+    'notes': 'notes',
+    'creation_comment': 'comment',
+    'number_of_sweeps': 'number_of_sweeps',
+    'analyser_mode': 'analyser_mode',
+    'divide_voltages_by_10': 'divide_voltages_by_10',
+    'aperture': 'aperture',
+    'excitation_source': 'excitation_source',
+}
+
+
+def _anode_from_source(excitation_source):
+    """'Mg Ka 1253.6 eV normal' -> 'Mg Ka'"""
+    match = re.match(r'^\s*([A-Z][a-z]?\s+K[a-zα]+\d?)', excitation_source or '')
+    return match.group(1) if match else None
+
+
+def create_settings(parsed):
+    settings = SEAID_XPS_ANA_RegionSettings(
+        **{
+            target: parsed[key]
+            for key, target in settings_mapping.items()
+            if parsed.get(key) is not None
+        }
+    )
+
+    if parsed.get('analyser_workfunction') is not None:
+        settings.analyzer_parameters = PESSpecsLabProdigyAnalyzerParameters(
+            work_function=parsed['analyser_workfunction']
+        )
+
+    source = PESSpecsLabProdigySourceParameters()
+    if parsed.get('excitation_energy') is not None:
+        source.excitation_energy = parsed['excitation_energy']
+    anode = _anode_from_source(parsed.get('excitation_source'))
+    if anode:
+        source.anode = anode
+    if source.m_to_dict():
+        settings.source_parameters = source
+    return settings
 
 
 class SEAID_XPSRegion(ArchiveSection):
@@ -69,7 +115,7 @@ class SEAID_XPSRegion(ArchiveSection):
 
     name = Quantity(type=str, description='Transition / region name.')
 
-    settings = SubSection(section_def=SEAID_XPSRegionSettings)
+    settings = SubSection(section_def=SEAID_XPS_ANA_RegionSettings)
 
     kinetic_energy = Quantity(type=np.dtype(np.float64), shape=['*'], unit='eV')
     binding_energy = Quantity(
@@ -83,12 +129,12 @@ class SEAID_XPSRegion(ArchiveSection):
     counts = Quantity(type=np.dtype(np.float64), shape=['*'])
 
 
-class SEAID_XPS(XPS, PlotSection, EntryData):
-    """XPS measurement of the SE-AID group."""
+class SEAID_XPS_ANA(XPS, PlotSection, EntryData):
+    """XPS ANA-lytics measurement of the SE-AID group."""
 
     m_def = Section(
-        label='SE-AID XPS',
-        links=['http://purl.obolibrary.org/obo/CHMO_0000404'],
+        label='SE-AID XPS-ANA',
+        links=['http://purl.obolibrary.org/obo/CHMO_0000404'],  # annotation to XPS
         a_eln=dict(
             hide=['lab_id', 'steps', 'results', 'location'],
             properties=dict(
@@ -103,20 +149,28 @@ class SEAID_XPS(XPS, PlotSection, EntryData):
         with archive.m_context.raw_file(self.data_file, 'rt') as f:
             parsed_regions = read_xps_txt(f)
 
-        settings_names = set(SEAID_XPSRegionSettings.m_def.all_quantities)
+        # The "Notes" of the file go into the description of the entry.
+        # A description edited in the ELN is kept when the file is read again.
+        if not self.description:
+            notes = [
+                (parsed.get('transition'), parsed['notes'])
+                for parsed in parsed_regions
+                if parsed.get('notes')
+            ]
+            if len(parsed_regions) == 1 and notes:
+                self.description = notes[0][1]
+            elif notes:
+                self.description = '\n'.join(
+                    f'<p><b>{name}:</b> {text}</p>' for name, text in notes
+                )
+
         regions = []
         for parsed in parsed_regions:
-            settings = SEAID_XPSRegionSettings(
-                **{
-                    key: value
-                    for key, value in parsed.items()
-                    if key in settings_names and value is not None
-                }
-            )
+            settings = create_settings(parsed)
             region = SEAID_XPSRegion(name=parsed.get('transition'), settings=settings)
-            region.kinetic_energy = parsed['kinetic_energy']
-            region.binding_energy = parsed['binding_energy']
-            region.counts = parsed['counts']
+            region.kinetic_energy = parsed.get('kinetic_energy')  # ['kinetic_energy']
+            region.binding_energy = parsed.get('binding_energy')  # ['binding_energy']
+            region.counts = parsed.get('counts')  # ['counts']
             regions.append(region)
         self.regions = regions
 

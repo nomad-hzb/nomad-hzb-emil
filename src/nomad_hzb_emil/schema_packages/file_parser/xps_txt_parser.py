@@ -90,12 +90,19 @@ def _parse_region(lines):
             elif key:
                 extra[key] = value
         elif _DATA_LINE.match(line):
-            data.append([float(v) for v in line.split()[:2]])
+            values = line.split()
+            if len(values) < 2:
+                continue
+            try:
+                data.append([float(values[0]), float(values[1])])
+            except ValueError:
+                continue
 
     data = np.array(data, dtype=float).reshape(-1, 2)
     energy_column = column_names[0] if column_names else ''
+    energy_mode = (header.get('energy_mode') or '').upper()
     energy_is_binding = 'Binding' in energy_column or (
-        not energy_column and header.get('energy_mode', '').upper() == 'BE'
+        not energy_column and energy_mode == 'BE'
     )
 
     hv = header.get('excitation_energy')

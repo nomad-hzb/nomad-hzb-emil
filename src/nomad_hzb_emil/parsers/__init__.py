@@ -65,7 +65,11 @@ se_aid_xps_parser = SEAIDXPSParserEntryPoint(
     description='Parse txt exports of XPS measurements of the SE-AID group '
     '(header lines starting with "# Transition", followed by energy and counts).',
     mainfile_name_re=r'.*\.txt',
-    mainfile_contents_re=r'^# Transition .*\r?\n# Notes[\s\S]*# Energy Mode',
+    # '# Transition' header, any further '#' header lines, then the column header
+    mainfile_contents_re=(
+        r'^# Transition .*\r?\n(?:#.*\r?\n)*?'
+        r'# (?:Kinetic|Binding) Energy in eV\s+Counts'
+    ),
     # Match before the EMIL general process parser, which would otherwise
     # claim files whose names start with a sample id (e.g. AnVe0001-xps.txt).
     matching_order=-1,

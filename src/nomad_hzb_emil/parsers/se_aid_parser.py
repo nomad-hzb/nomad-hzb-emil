@@ -40,7 +40,7 @@ from nomad.metainfo import (
 )
 from nomad.parsing import MatchingParser
 
-from nomad_hzb_emil.schema_packages.se_aid_package import SEAID_XPS
+from nomad_hzb_emil.schema_packages.se_aid_package import SEAID_XPS_ANA
 
 # Same sample id formats as the EMIL general process parser:
 # CaTe0001 (EMIL), 61-123-468 (ASCEND wafer), CT-61-123 (ASCEND batch)
@@ -54,8 +54,12 @@ SAMPLE_ID_RE = re.compile(
 # NOMAD links the measurement to the instrument entry whose lab_id matches
 # XPS_INSTRUMENT_LAB_ID. If no such entry exists on the installation, only a
 # warning is logged and the instrument is kept by name.
-XPS_INSTRUMENT_NAME = 'XPS-ANAlytics'
-XPS_INSTRUMENT_LAB_ID = 'XPS-ANAlytics'  # change to the lab ID of the instrument entry
+XPS_instrument_name = 'XPS-ANAlytics'
+XPS_instrument_LabID = 'XPS-ANAlytics'  # lab ID of the instrument entry in EMIL Oasis
+XPS_instrument_uploadID = 'vXP9c-6ORy2L06k4OlYC-w'
+#'vXP9c-6ORy2L06k4OlYC-w' #local test: _4NALKYSRLuZLz_RbFJU7Q
+XPS_instrument_entryID = 'jgXBc7awwGMxhdlqyO3SpE4uUJSC'
+# real: 'jgXBc7awwGMxhdlqyO3SpE4uUJSC' #local test: 'V38oAnKeTzEOfZVQzDQGzhlZadme'
 
 
 def get_sample_id_from_file_name(file_name):
@@ -78,13 +82,16 @@ class SEAIDXPSParser(MatchingParser):
         file_path = mainfile.rsplit('/raw/', maxsplit=1)[-1]
         file_name = file_path.split('/')[-1]
 
-        entry = SEAID_XPS()
+        entry = SEAID_XPS_ANA()
         entry.name = file_name.rsplit('.', 1)[0]
         entry.data_file = file_path
         entry.instruments = [
             InstrumentReference(
-                name=XPS_INSTRUMENT_NAME,
-                lab_id=XPS_INSTRUMENT_LAB_ID,
+                name=XPS_instrument_name,
+                lab_id=XPS_instrument_LabID,
+                reference=get_reference(
+                    XPS_instrument_uploadID, XPS_instrument_entryID
+                ),
             )
         ]
 

@@ -1,6 +1,6 @@
 # Transition                      Mg survey
-# Notes                           
-# Creation Comment                
+# Notes                           This a first try for Mg survey
+# Creation Comment                This measurement is wrong
 # Energy Mode                     KE
 # Start Energy in eV              218.5
 # End Energy in eV                1258.6
