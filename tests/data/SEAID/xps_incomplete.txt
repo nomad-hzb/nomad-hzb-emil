@@ -1,0 +1,11 @@
+# Transition                      O 1s
+# Energy Mode                     
+# Pass Energy in eV/Retard Ratio  20
+# 
+# Kinetic Energy in eV         Counts
+# --------------------         ------
+720.000                    1000.0
+720.100                    1010.5
+720.200
+not a number               12
+720.300                    1020.0

@@ -24,6 +24,13 @@ class TFCXRFLibraryParserEntryPoint(ParserEntryPoint):
         return TFCXRFParser(**self.model_dump())
 
 
+class SEAIDXPSParserEntryPoint(ParserEntryPoint):
+    def load(self):
+        from nomad_hzb_emil.parsers.se_aid_parser import SEAIDXPSParser
+
+        return SEAIDXPSParser(**self.model_dump())
+
+
 emil_general_process_parser = EMILGeneralProcessParserEntryPoint(
     name='EMILGeneralProcessParser',
     description='Parser for general files starting with a sample id',
@@ -51,4 +58,19 @@ tfc_xrf_parser = TFCXRFLibraryParserEntryPoint(
     'and later combined with spx files that are located the same directory.',
     mainfile_name_re=r'.*\.txt',
     mainfile_contents_re=r'((([\s\S]*\bBasis\b)([\s\S]*\bSpektrum\b)([\s\S]*\bDicke\b)([\s\S]*\bBase\b)([\s\S]*\bMittelwert\b)([\s\S]*\bStd\sAbw\.?\b)([\s\S]*\bStd\sAbw\.\srel\.\s\[%\]).*)|(([\s\S]*\bSubstrate\b)([\s\S]*\bSpectrum\b)([\s\S]*\bThickn\.?\b)([\s\S]*\bBase\b)([\s\S]*\bMean\svalue\b)([\s\S]*\bStd dev\.?\b)([\s\S]*\bStd\sdev\.\srel\.\s\[%\]).*))',  # noqa: E501
+)
+
+se_aid_xps_parser = SEAIDXPSParserEntryPoint(
+    name='SEAIDXPSParser',
+    description='Parse txt exports of XPS measurements of the SE-AID group '
+    '(header lines starting with "# Transition", followed by energy and counts).',
+    mainfile_name_re=r'.*\.txt',
+    # '# Transition' header, any further '#' header lines, then the column header
+    mainfile_contents_re=(
+        r'^# Transition .*\r?\n(?:#.*\r?\n)*?'
+        r'# (?:Kinetic|Binding) Energy in eV\s+Counts'
+    ),
+    # Match before the EMIL general process parser, which would otherwise
+    # claim files whose names start with a sample id (e.g. AnVe0001-xps.txt).
+    matching_order=-1,
 )
