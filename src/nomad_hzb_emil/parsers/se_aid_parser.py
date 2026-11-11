@@ -22,6 +22,7 @@ from baseclasses.helper.utilities import (
     create_archive,
     get_entry_id_from_file_name,
     get_reference,
+    search_entry_by_id,
     set_sample_reference,
 )
 from nomad.datamodel import EntryArchive
@@ -55,11 +56,8 @@ SAMPLE_ID_RE = re.compile(
 # XPS_INSTRUMENT_LAB_ID. If no such entry exists on the installation, only a
 # warning is logged and the instrument is kept by name.
 XPS_instrument_name = 'XPS-ANAlytics'
-XPS_instrument_LabID = 'XPS-ANAlytics'  # lab ID of the instrument entry in EMIL Oasis
-XPS_instrument_uploadID = 'vXP9c-6ORy2L06k4OlYC-w'
-#'vXP9c-6ORy2L06k4OlYC-w' #local test: _4NALKYSRLuZLz_RbFJU7Q
-XPS_instrument_entryID = 'jgXBc7awwGMxhdlqyO3SpE4uUJSC'
-# real: 'jgXBc7awwGMxhdlqyO3SpE4uUJSC' #local test: 'V38oAnKeTzEOfZVQzDQGzhlZadme'
+# lab ID of the instrument entry in EMIL Oasis
+XPS_instrument_LabID = 'HZB_ScHz_20261104_XPS-ANAlytics'  # 'XPS-ANAlytics'
 
 
 def get_sample_id_from_file_name(file_name):
@@ -85,13 +83,18 @@ class SEAIDXPSParser(MatchingParser):
         entry = SEAID_XPS_ANA()
         entry.name = file_name.rsplit('.', 1)[0]
         entry.data_file = file_path
+
+        instruments = search_entry_by_id(archive, entry, XPS_instrument_LabID).data
+
         entry.instruments = [
             InstrumentReference(
                 name=XPS_instrument_name,
                 lab_id=XPS_instrument_LabID,
                 reference=get_reference(
-                    XPS_instrument_uploadID, XPS_instrument_entryID
-                ),
+                    instruments[0].get('upload_id'), instruments[0].get('entry_id')
+                )
+                if len(instruments) == 1
+                else None,
             )
         ]
 
