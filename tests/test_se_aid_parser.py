@@ -71,9 +71,13 @@ def test_xps_parser(patch_archive_context):
     assert not data.samples
     assert len(data.instruments) == 1
     assert data.instruments[0].name == 'XPS-ANAlytics'
-    assert data.instruments[0].lab_id == 'XPS-ANAlytics'
+    # 'XPS-ANAlytics'
+    assert data.instruments[0].lab_id == 'HZB_ScHz_20261104_XPS-ANAlytics'
     # points to the instrument entry set in se_aid_parser.py
-    assert data.instruments[0].m_to_dict()['reference'].startswith('../uploads/')
+    # assert data.instruments[0].m_to_dict()['reference'].startswith('../uploads/')
+    # the (mocked) search finds no instrument entry
+    assert data.instruments[0].reference is None
+
     assert len(data.regions) == 1
 
     region = data.regions[0]

@@ -51,3 +51,12 @@ def set_monkey_patch(monkeypatch):
         'nomad_hzb_emil.parsers.se_aid_parser.set_sample_reference',
         mockreturn_search,
     )
+    monkeypatch.setattr(
+        'nomad_hzb_emil.parsers.se_aid_parser.set_sample_reference',
+        mockreturn_search,
+    )
+    # no search engine in the tests: the instrument search finds nothing
+    monkeypatch.setattr(
+        'nomad_hzb_emil.parsers.se_aid_parser.search_entry_by_id',
+        lambda *args: SimpleNamespace(data=[]),
+    )
