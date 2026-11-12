@@ -41,7 +41,7 @@ scala_eln_app = AppEntryPoint(
 )
 
 
-schema_name = 'nomad_hzb_emil.schema_packages.emil_package_entry_point.EMIL_VoilaNotebook'
+schema_name = 'nomad_hzb_emil.schema_packages.emil_lab_package.EMIL_VoilaNotebook'
 emil_lab_voila_app = AppEntryPoint(
     name='voila',
     description='Find and launch your Voila Tools.',
